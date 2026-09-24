@@ -23,10 +23,26 @@ android {
         targetSdkVersion appAndroidTargetSDK
     }
 
+    signingConfigs {
+        soulshards {
+            def props = new Properties()
+            def signingFile = file('signing.properties')
+            if (signingFile.exists()) {
+                signingFile.withInputStream { props.load(it) }
+                storeFile file(props['storeFile'])
+                storePassword props['storePassword']
+                keyAlias props['keyAlias']
+                keyPassword props['keyPassword']
+            }
+        }
+    }
+
     buildTypes {
         debug {
-            applicationIdSuffix ".indev"
             versionNameSuffix '-INDEV'
+            if (signingConfigs.soulshards.storeFile != null) {
+                signingConfig signingConfigs.soulshards
+            }
             dependencies {
                 debugImplementation project(':services:updates:debugUpdates')
                 debugImplementation project(':services:news:debugNews')

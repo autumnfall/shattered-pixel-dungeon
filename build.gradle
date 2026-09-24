@@ -11,8 +11,8 @@ buildscript {
 allprojects {
 
     ext {
-        appName = 'Shattered Pixel Dungeon'
-        appPackageName = 'com.shatteredpixel.shatteredpixeldungeon'
+        appName = 'SoulShards Dungeon'
+        appPackageName = 'com.shatteredpixel.soulshards'
 
         //Full releases gets +2 on version code, needed for an F-Droid quirk
         appVersionCode = 912

@@ -24,6 +24,7 @@ package com.shatteredpixel.shatteredpixeldungeon.scenes;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Chrome;
 import com.shatteredpixel.shatteredpixeldungeon.GamesInProgress;
+import com.shatteredpixel.shatteredpixeldungeon.MetaProgress;
 import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
@@ -31,11 +32,13 @@ import com.shatteredpixel.shatteredpixeldungeon.journal.Journal;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Button;
 import com.shatteredpixel.shatteredpixeldungeon.ui.ExitButton;
+import com.shatteredpixel.shatteredpixeldungeon.ui.IconButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
 import com.shatteredpixel.shatteredpixeldungeon.ui.TitleBackground;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
 import com.shatteredpixel.shatteredpixeldungeon.ui.StyledButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
+import com.shatteredpixel.shatteredpixeldungeon.ui.WndMeta;
 import com.shatteredpixel.shatteredpixeldungeon.windows.IconTitle;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndGameInProgress;
 import com.watabou.noosa.BitmapText;
@@ -58,6 +61,7 @@ public class StartScene extends PixelScene {
 		
 		Badges.loadGlobal();
 		Journal.loadGlobal();
+		MetaProgress.loadGlobal();
 		
 		uiCamera.visible = false;
 
@@ -74,6 +78,22 @@ public class StartScene extends PixelScene {
 		ExitButton btnExit = new ExitButton();
 		btnExit.setPos( insets.left + w - btnExit.width(), insets.top );
 		add( btnExit );
+
+		IconButton btnMeta = new IconButton( Icons.get(Icons.TALENT) ){
+			@Override
+			protected void onClick() {
+				super.onClick();
+				ShatteredPixelDungeon.scene().add( new WndMeta() );
+			}
+
+			@Override
+			protected String hoverText() {
+				return Messages.titleCase(Messages.get(WndMeta.class, "title"));
+			}
+		};
+		btnMeta.setSize( 20, 20 );
+		btnMeta.setPos( insets.left, insets.top );
+		add( btnMeta );
 		
 		IconTitle title = new IconTitle( Icons.ENTER.get(), Messages.get(this, "title"));
 		title.setSize(200, 0);

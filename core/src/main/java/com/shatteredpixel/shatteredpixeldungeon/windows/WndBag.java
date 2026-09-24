@@ -104,7 +104,16 @@ public class WndBag extends WndTabbed {
 		slotHeight = PixelScene.landscape() ? SLOT_HEIGHT_L : SLOT_HEIGHT_P;
 
 		nCols = PixelScene.landscape() ? COLS_L : COLS_P;
-		nRows = (int)Math.ceil(25/(float)nCols); //we expect to lay out 25 slots in all cases
+		//soulshards: slot count depends on bag capacity (backpack may be expanded)
+		int equippedSlots = 5;
+		if (bag == Dungeon.hero.belongings.backpack && Dungeon.hero.belongings.secondWep != null){
+			equippedSlots++;
+		}
+		int totalSlots = equippedSlots + bag.capacity();
+		if (bag != Dungeon.hero.belongings.backpack){
+			totalSlots++; //the container itself occupies a slot
+		}
+		nRows = Math.max((int)Math.ceil(25/(float)nCols), (int)Math.ceil(totalSlots/(float)nCols));
 
 		int windowWidth = slotWidth * nCols + SLOT_MARGIN * (nCols - 1);
 		int windowHeight = TITLE_HEIGHT + slotHeight * nRows + SLOT_MARGIN * (nRows - 1);

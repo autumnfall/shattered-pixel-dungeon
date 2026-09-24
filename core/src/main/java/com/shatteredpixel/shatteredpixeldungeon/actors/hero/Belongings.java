@@ -52,11 +52,16 @@ public class Belongings implements Iterable<Item> {
 	private Hero owner;
 
 	public static class Backpack extends Bag {
+
+		private static final String BONUS_CAPACITY	= "bonus_capacity";
+
+		public int bonusCapacity = 0;
+
 		{
 			image = ItemSpriteSheet.BACKPACK;
 		}
 		public int capacity(){
-			int cap = super.capacity();
+			int cap = super.capacity() + bonusCapacity;
 			for (Item item : items){
 				if (item instanceof Bag){
 					cap++;
@@ -67,6 +72,18 @@ public class Belongings implements Iterable<Item> {
 				cap--;
 			}
 			return cap;
+		}
+
+		@Override
+		public void storeInBundle( Bundle bundle ) {
+			super.storeInBundle( bundle );
+			bundle.put( BONUS_CAPACITY, bonusCapacity );
+		}
+
+		@Override
+		public void restoreFromBundle( Bundle bundle ) {
+			super.restoreFromBundle( bundle );
+			bonusCapacity = bundle.getInt( BONUS_CAPACITY );
 		}
 	}
 

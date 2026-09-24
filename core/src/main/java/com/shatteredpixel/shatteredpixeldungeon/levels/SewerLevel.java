@@ -25,6 +25,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.GamesInProgress;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Ghost;
@@ -165,6 +166,7 @@ public class SewerLevel extends RegularLevel {
 					public void afterCreate() {
 						Badges.validateHappyEnd();
 						Dungeon.win( Amulet.class );
+						ModHooks.onVictory();
 						Dungeon.deleteGame( GamesInProgress.curSlot, true );
 						Badges.saveGlobal();
 					}
