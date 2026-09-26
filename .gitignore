@@ -15,10 +15,6 @@ release/
 # Local configuration file (sdk path, etc)
 local.properties
 
-# Signing key and credentials (never commit)
-android/keystore/
-android/signing.properties
-
 #intellij project files
 *.iml
 *.idea
