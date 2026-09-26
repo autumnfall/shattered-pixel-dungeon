@@ -49,6 +49,12 @@ android {
             }
         }
         release {
+            if (signingConfigs.soulshards.storeFile != null) {
+                signingConfig signingConfigs.soulshards
+            }
+
+            //separate package id so the modded build installs alongside the official release
+            applicationIdSuffix '.mod'
 
             //These lines enable R8, which is a code shrinker/optimizer/obfuscator.
             //This makes release APKs smaller and more efficient, but also makes debugging trickier
@@ -59,8 +65,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
             dependencies {
-                releaseImplementation project(':services:updates:githubUpdates')
-                releaseImplementation project(':services:news:shatteredNews')
+                //no-op stubs: official update/news services point at the upstream repo,
+                //whose APKs cannot install over this independently-signed build
+                releaseImplementation project(':services:updates:debugUpdates')
+                releaseImplementation project(':services:news:debugNews')
             }
         }
     }

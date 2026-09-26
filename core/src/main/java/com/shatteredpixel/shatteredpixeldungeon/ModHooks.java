@@ -70,8 +70,10 @@ public class ModHooks {
 	}
 
 	public static int bonusTalentPoints( Hero hero, int tier ){
-		if (tier == 1){
-			return MetaProgress.Imprint.BORN_TALENT.level();
+		//each imprint level grants +1 talent point to one more tier, awarded as tiers unlock,
+		//mirroring the potion of divine inspiration
+		if (tier >= 1 && tier <= MetaProgress.Imprint.BORN_TALENT.level()){
+			return 1;
 		}
 		return 0;
 	}

@@ -27,9 +27,13 @@ import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
+import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.shatteredpixel.shatteredpixeldungeon.windows.IconTitle;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndInfoItem;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndSadGhost;
 import com.watabou.utils.Random;
 
 import java.util.ArrayList;
@@ -40,9 +44,10 @@ public class WndReward extends Window {
 		GOO, TENGU, DM300, KING
 	}
 
-	private static final int WIDTH		= 160;
-	private static final int GAP		= 3;
-	private static final int BTN_HEIGHT	= 18;
+	private static final int WIDTH		= 120;
+	private static final int BTN_SIZE	= 32;
+	private static final int BTN_GAP	= 5;
+	private static final int GAP		= 2;
 
 	public WndReward( LootType type ){
 		super();
@@ -56,29 +61,77 @@ public class WndReward extends Window {
 		prompt.setPos( 0, title.bottom() + GAP );
 		add( prompt );
 
-		float pos = prompt.bottom() + GAP + 1;
-		for (Item reward : generateRewards( type )){
-			addRewardButton( reward, pos );
-			pos += BTN_HEIGHT + GAP;
+		ArrayList<Item> rewards = generateRewards( type );
+
+		float left = (WIDTH - (BTN_SIZE*rewards.size() + BTN_GAP*(rewards.size()-1)))/2f;
+		float top = prompt.bottom() + BTN_GAP + 1;
+		for (final Item reward : rewards){
+			ItemButton btn = new ItemButton(){
+				@Override
+				protected void onClick() {
+					super.onClick();
+					if (item() != null){
+						GameScene.show( new RewardWindow( item() ) );
+					}
+				}
+			};
+			btn.item( reward );
+			btn.setRect( left, top, BTN_SIZE, BTN_SIZE );
+			add( btn );
+			left += BTN_SIZE + BTN_GAP;
 		}
 
-		resize( WIDTH, (int)(pos - GAP) );
+		resize( WIDTH, (int)(top + BTN_SIZE + BTN_GAP) );
 	}
 
-	private void addRewardButton( final Item reward, float pos ){
-		RedButton btn = new RedButton( Messages.titleCase( reward.title() ) ){
-			@Override
-			protected void onClick() {
-				super.onClick();
-				if (!reward.collect()){
-					Dungeon.level.drop( reward, Dungeon.hero.pos ).sprite.drop();
+	@Override
+	public void onBackPressed() {
+		//this window holds a one-time reward, it must not be dismissable by accident
+	}
+
+	private void selectReward( Item reward ){
+		hide();
+
+		if (reward == null){
+			return;
+		}
+
+		if (reward.doPickUp( Dungeon.hero )) {
+			GLog.i( Messages.capitalize(Messages.get(Dungeon.hero, "you_now_have", reward.name())) );
+		} else {
+			Dungeon.level.drop( reward, Dungeon.hero.pos ).sprite.drop();
+		}
+	}
+
+	private class RewardWindow extends WndInfoItem {
+
+		public RewardWindow( Item item ) {
+			super(item);
+
+			RedButton btnConfirm = new RedButton(Messages.get(WndSadGhost.class, "confirm")){
+				@Override
+				protected void onClick() {
+					super.onClick();
+					RewardWindow.this.hide();
+
+					selectReward( item );
 				}
-				hide();
-			}
-		};
-		btn.icon( new ItemSprite( reward ) );
-		btn.setRect( 0, pos, WIDTH, BTN_HEIGHT );
-		add( btn );
+			};
+			btnConfirm.setRect(0, height+2, width/2-1, 16);
+			add(btnConfirm);
+
+			RedButton btnCancel = new RedButton(Messages.get(WndSadGhost.class, "cancel")){
+				@Override
+				protected void onClick() {
+					super.onClick();
+					hide();
+				}
+			};
+			btnCancel.setRect(btnConfirm.right()+2, height+2, btnConfirm.width(), 16);
+			add(btnCancel);
+
+			resize(width, (int)btnCancel.bottom());
+		}
 	}
 
 	private ArrayList<Item> generateRewards( LootType type ){
