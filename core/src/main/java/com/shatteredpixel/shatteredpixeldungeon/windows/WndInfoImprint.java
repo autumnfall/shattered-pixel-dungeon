@@ -85,10 +85,16 @@ public class WndInfoImprint extends Window {
 		String key = imprint.name().toLowerCase( Locale.ENGLISH );
 
 		titlebar.label( Messages.titleCase(Messages.get(WndMeta.class, key))
-				+ "  _" + imprint.level() + "/" + imprint.maxLevel() + "_", TITLE_COLOR );
+				+ "（" + imprint.level() + "/" + imprint.maxLevel() + "）", TITLE_COLOR );
 		titlebar.setRect( 0, 0, WIDTH, 0 );
 
-		String text = Messages.get(WndMeta.class, key + "_desc", imprint.level());
+		Object descArg = imprint.level();
+		if (imprint == Imprint.GOLD){
+			descArg = imprint.level() * 100;
+		} else if (imprint == Imprint.FORTUNE){
+			descArg = imprint.level() * 10;
+		}
+		String text = Messages.get(WndMeta.class, key + "_desc", descArg);
 
 		int cost = imprint.upgradeCost();
 		if (!MetaProgress.isTierUnlocked(imprint.tier())){

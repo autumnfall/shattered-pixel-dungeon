@@ -148,18 +148,18 @@ public class WndReward extends Window {
 				rewards.add( prep( Generator.random( Generator.Category.ARTIFACT ), Random.Int( 2 ) ) );
 				break;
 			case DM300:
-				rewards.add( prep( Generator.random( Generator.wepTiers[Random.IntRange( 1, 3 )] ), 1 + Random.Int( 2 ) ) );
-				rewards.add( prep( randomArmorInTier( 2, 4 ), 1 + Random.Int( 2 ) ) );
-				rewards.add( prep( Generator.random( Generator.misTiers[Random.IntRange( 1, 3 )] ), 1 + Random.Int( 2 ) ) );
+				rewards.add( prep( Generator.random( Generator.wepTiers[2] ), 1 + Random.Int( 2 ) ) );
+				rewards.add( prep( randomArmorInTier( 3, 3 ), 1 + Random.Int( 2 ) ) );
+				rewards.add( prep( Generator.random( Generator.misTiers[2] ), 1 + Random.Int( 2 ) ) );
 				break;
 			case KING:
-				Weapon wep = (Weapon) prep( Generator.random( Generator.wepTiers[Random.IntRange( 2, 4 )] ), 3 + Random.Int( 2 ) );
+				Weapon wep = (Weapon) prep( Generator.random( Generator.wepTiers[3] ), 3 + Random.Int( 2 ) );
 				wep.enchant( Weapon.Enchantment.random() );
 				rewards.add( wep );
-				Armor arm = (Armor) prep( randomArmorInTier( 3, 5 ), 3 + Random.Int( 2 ) );
+				Armor arm = (Armor) prep( randomArmorInTier( 4, 4 ), 3 + Random.Int( 2 ) );
 				arm.inscribe( Armor.Glyph.random() );
 				rewards.add( arm );
-				rewards.add( prep( Generator.random( Generator.misTiers[Random.IntRange( 2, 4 )] ), 3 + Random.Int( 2 ) ) );
+				rewards.add( prep( Generator.random( Generator.misTiers[3] ), 3 + Random.Int( 2 ) ) );
 				break;
 		}
 		return rewards;
