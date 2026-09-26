@@ -81,10 +81,16 @@ runtime {
     } else if (osName.contains('linux')) {
         //May work on glibc 2.12 (2010), but that's old enough that I'm only officially supporting glibc 2.17 (2012)
         targetPlatform("linux") {
-            jdkHome = jdkDownload("https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.17%2B10/OpenJDK17U-jdk_x64_linux_hotspot_17.0.17_10.tar.gz")
-            javaHome = file("./build/jdks/linux/jdk-17.0.17+10").getAbsolutePath()
+            def localJdkHome = System.getenv('SPD_LINUX_JDK_HOME')
+            if (localJdkHome == null || localJdkHome.isBlank()) {
+                jdkHome = jdkDownload("https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.17%2B10/OpenJDK17U-jdk_x64_linux_hotspot_17.0.17_10.tar.gz")
+                localJdkHome = file("./build/jdks/linux/jdk-17.0.17+10").getAbsolutePath()
+            } else {
+                jdkHome = providers.provider { localJdkHome }
+            }
+            javaHome = localJdkHome
             jpackage {
-                jpackageHome = file("./build/jdks/linux/jdk-17.0.17+10")
+                jpackageHome = localJdkHome
                 imageOptions = ["--icon", file("./src/main/assets/icons/icon_256.png"),
                                 "--java-options", "-XX:+IgnoreUnrecognizedVMOptions"]
             }
@@ -124,6 +130,8 @@ dependencies {
     implementation "org.lwjgl:lwjgl-tinyfd:3.3.3:natives-linux"
     implementation "org.lwjgl:lwjgl-tinyfd:3.3.3:natives-linux-arm64"
 
-    implementation project(':services:updates:githubUpdates')
-    implementation project(':services:news:shatteredNews')
+    //no-op stubs: official update/news services point at the upstream repo,
+    //whose builds are not applicable to this modded build
+    implementation project(':services:updates:debugUpdates')
+    implementation project(':services:news:debugNews')
 }
