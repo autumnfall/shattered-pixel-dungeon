@@ -39,6 +39,7 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.ui.ExitButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.IconButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
+import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
 import com.shatteredpixel.shatteredpixeldungeon.ui.StyledButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.TitleBackground;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
@@ -141,6 +142,13 @@ public class TitleScene extends PixelScene {
 		signs.x = title.x + (title.width() - signs.width())/2f;
 		signs.y = title.y;
 		add( signs );
+
+		//mod: soul shards label on the title banner, keeps the modded build distinguishable
+		RenderedTextBlock modLabel = PixelScene.renderTextBlock( "魂晶印记 MOD", 7 );
+		modLabel.hardlight( 0xE8C84A );
+		modLabel.setPos( title.x + title.width() - modLabel.width() - 8, title.y + title.height - 14 );
+		align(modLabel);
+		add( modLabel );
 
 		final Chrome.Type GREY_TR = Chrome.Type.GREY_BUTTON_TR;
 		
