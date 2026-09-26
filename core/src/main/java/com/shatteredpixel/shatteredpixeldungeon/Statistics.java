@@ -76,6 +76,9 @@ public class Statistics {
 	public static boolean amuletObtained = false;
 	public static boolean gameWon = false;
 	public static boolean ascended = false;
+
+	//mod: fate rewrite imprint, reroll charges for reward choices, reset per run
+	public static int rerollCharges = 0;
 	
 	public static void reset() {
 		
@@ -121,6 +124,8 @@ public class Statistics {
 		amuletObtained = false;
 		gameWon = false;
 		ascended = false;
+
+		rerollCharges = 0;
 		
 	}
 	
@@ -165,6 +170,7 @@ public class Statistics {
 	private static final String AMULET          = "amuletObtained";
 	private static final String WON		        = "won";
 	private static final String ASCENDED		= "ascended";
+	private static final String REROLL_CHARGES  = "reroll_charges";
 	
 	public static void storeInBundle( Bundle bundle ) {
 		bundle.put( GOLD,		goldCollected );
@@ -211,6 +217,7 @@ public class Statistics {
 		bundle.put( AMULET,		amuletObtained );
 		bundle.put( WON,        gameWon );
 		bundle.put( ASCENDED,   ascended );
+		bundle.put( REROLL_CHARGES, rerollCharges );
 	}
 	
 	public static void restoreFromBundle( Bundle bundle ) {
@@ -266,6 +273,8 @@ public class Statistics {
 		amuletObtained	= bundle.getBoolean( AMULET );
 		gameWon         = bundle.getBoolean( WON );
 		ascended        = bundle.getBoolean( ASCENDED );
+		if (bundle.contains( REROLL_CHARGES )) rerollCharges = bundle.getInt( REROLL_CHARGES );
+		else                                     rerollCharges = 0;
 	}
 	
 	public static void preview( GamesInProgress.Info info, Bundle bundle ){

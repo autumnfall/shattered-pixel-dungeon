@@ -27,6 +27,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.DwarfKing;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Goo;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Tengu;
+import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.SmallRation;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfIdentify;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
@@ -50,6 +51,23 @@ public class ModHooks {
 		for (int i = 0; i < MetaProgress.Imprint.IDENTIFY.level(); i++){
 			new ScrollOfIdentify().collect();
 		}
+		for (int i = 0; i < MetaProgress.Imprint.SEEDS.level(); i++){
+			Generator.random( Generator.Category.SEED ).collect();
+		}
+		Statistics.rerollCharges = MetaProgress.Imprint.REROLL.level();
+	}
+
+	//mod: fate rewrite imprint, consumes one reroll charge if available
+	public static boolean rerollAvailable(){
+		return Statistics.rerollCharges > 0;
+	}
+
+	public static boolean useReroll(){
+		if (Statistics.rerollCharges > 0){
+			Statistics.rerollCharges--;
+			return true;
+		}
+		return false;
 	}
 
 	public static void onReallyDie(){

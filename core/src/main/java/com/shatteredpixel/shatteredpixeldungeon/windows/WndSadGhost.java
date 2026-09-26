@@ -22,6 +22,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.windows;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Ghost;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
@@ -32,6 +33,8 @@ import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.FetidRatSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.GnollTricksterSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.GreatCrabSprite;
+import com.shatteredpixel.shatteredpixeldungeon.ui.IconButton;
+import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
 import com.shatteredpixel.shatteredpixeldungeon.ui.ItemButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RedButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
@@ -46,12 +49,31 @@ public class WndSadGhost extends Window {
 	private static final int GAP		= 2;
 
 	Ghost ghost;
-	
+	private int type;
+
 	public WndSadGhost( final Ghost ghost, final int type ) {
-		
+
 		super();
 
 		this.ghost = ghost;
+		this.type = type;
+
+		//mod: fate rewrite imprint, one reroll per charge
+		if (ModHooks.rerollAvailable()){
+			IconButton btnReroll = new IconButton( Icons.get(Icons.SHUFFLE) ){
+				@Override
+				protected void onClick() {
+					super.onClick();
+					if (ModHooks.useReroll()){
+						Ghost.Quest.rerollRewards();
+						WndSadGhost.this.hide();
+						GameScene.show( new WndSadGhost( ghost, type ) );
+					}
+				}
+			};
+			btnReroll.setRect( WIDTH - 16, 0, 16, 16 );
+			add( btnReroll );
+		}
 		
 		IconTitle titlebar = new IconTitle();
 		RenderedTextBlock message;

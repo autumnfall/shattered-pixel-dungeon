@@ -22,6 +22,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.windows;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Wandmaker;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.quest.CorpseDust;
@@ -31,6 +32,8 @@ import com.shatteredpixel.shatteredpixeldungeon.plants.Rotberry;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
+import com.shatteredpixel.shatteredpixeldungeon.ui.IconButton;
+import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
 import com.shatteredpixel.shatteredpixeldungeon.ui.ItemButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RedButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
@@ -53,6 +56,23 @@ public class WndWandmaker extends Window {
 
 		this.wandmaker = wandmaker;
 		this.questItem = item;
+
+		//mod: fate rewrite imprint, one reroll per charge
+		if (ModHooks.rerollAvailable()){
+			IconButton btnReroll = new IconButton( Icons.get(Icons.SHUFFLE) ){
+				@Override
+				protected void onClick() {
+					super.onClick();
+					if (ModHooks.useReroll()){
+						Wandmaker.Quest.rerollRewards();
+						WndWandmaker.this.hide();
+						GameScene.show( new WndWandmaker( wandmaker, item ) );
+					}
+				}
+			};
+			btnReroll.setRect( WIDTH - 16, 0, 16, 16 );
+			add( btnReroll );
+		}
 		
 		IconTitle titlebar = new IconTitle();
 		titlebar.icon(new ItemSprite(item.image(), null));

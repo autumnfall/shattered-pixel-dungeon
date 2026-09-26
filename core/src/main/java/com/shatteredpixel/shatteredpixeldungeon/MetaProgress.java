@@ -49,7 +49,10 @@ public class MetaProgress {
 		BAG        ("imprint_bag",	2, new int[]{30, 70, 150, 350}),
 		FORTUNE    ("imprint_fortune",	2, new int[]{50, 110, 200}),
 		BORN_TALENT("born_talent",	3, new int[]{20, 50, 120, 300}),
-		BOSS_LOOT  ("imprint_boss_loot",	3, new int[]{100, 200, 350, 450});
+		BOSS_LOOT  ("imprint_boss_loot",	3, new int[]{100, 200, 350, 450}),
+		SEEDS      ("imprint_seeds",	1, new int[]{12, 25, 40}),
+		SHOP       ("imprint_shop",	2, new int[]{45, 90, 150}),
+		REROLL     ("imprint_reroll",	3, new int[]{90, 170, 260});
 
 		private String key;
 		private int tier;

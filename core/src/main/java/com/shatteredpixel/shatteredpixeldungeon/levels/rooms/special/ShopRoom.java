@@ -22,6 +22,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.levels.rooms.special;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.MetaProgress;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Belongings;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
@@ -348,6 +349,24 @@ public class ShopRoom extends SpecialRoom {
 		rare.cursed = false;
 		rare.cursedKnown = true;
 		itemsToSpawn.add( rare );
+
+		//mod: boutique imprint, every shop stocks a few extra goods
+		for (int i = 0; i < MetaProgress.Imprint.SHOP.level(); i++){
+			switch (Random.Int(4)){
+				case 0: default:
+					itemsToSpawn.add( Generator.randomUsingDefaults( Generator.Category.POTION ) );
+					break;
+				case 1:
+					itemsToSpawn.add( Generator.randomUsingDefaults( Generator.Category.SCROLL ) );
+					break;
+				case 2:
+					itemsToSpawn.add( Generator.random( Generator.Category.SEED ) );
+					break;
+				case 3:
+					itemsToSpawn.add( new SmallRation() );
+					break;
+			}
+		}
 
 		//use a new generator here to prevent items in shop stock affecting levelgen RNG (e.g. sandbags)
 		//we can use a random long for the seed as it will be the same long every time

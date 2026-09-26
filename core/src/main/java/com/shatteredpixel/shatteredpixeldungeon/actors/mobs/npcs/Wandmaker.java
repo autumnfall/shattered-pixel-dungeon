@@ -331,22 +331,33 @@ public class Wandmaker extends NPC {
 				spawned = true;
 
 				given = false;
-				wand1 = (Wand) Generator.random(Generator.Category.WAND);
-				wand1.cursed = false;
-				wand1.upgrade();
+				generateRewards();
 
+			}
+		}
+
+		private static void generateRewards(){
+			wand1 = (Wand) Generator.random(Generator.Category.WAND);
+			wand1.cursed = false;
+			wand1.upgrade();
+
+			wand2 = (Wand) Generator.random(Generator.Category.WAND);
+			ArrayList<Item> toUndo = new ArrayList<>();
+			while (wand2.getClass() == wand1.getClass()) {
+				toUndo.add(wand2);
 				wand2 = (Wand) Generator.random(Generator.Category.WAND);
-				ArrayList<Item> toUndo = new ArrayList<>();
-				while (wand2.getClass() == wand1.getClass()) {
-					toUndo.add(wand2);
-					wand2 = (Wand) Generator.random(Generator.Category.WAND);
-				}
-				for (Item i :toUndo){
-					Generator.undoDrop(i);
-				}
-				wand2.cursed = false;
-				wand2.upgrade();
-				
+			}
+			for (Item i :toUndo){
+				Generator.undoDrop(i);
+			}
+			wand2.cursed = false;
+			wand2.upgrade();
+		}
+
+		//mod: fate rewrite imprint support
+		public static void rerollRewards(){
+			if (wand1 != null || wand2 != null){
+				generateRewards();
 			}
 		}
 		

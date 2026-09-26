@@ -26,6 +26,7 @@ import com.shatteredpixel.shatteredpixeldungeon.MetaProgress.Imprint;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.SmallRation;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfIdentify;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
+import com.shatteredpixel.shatteredpixeldungeon.plants.Sungrass;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
@@ -131,7 +132,10 @@ public class WndInfoImprint extends Window {
 			case BAG:		return Icons.get( Icons.BACKPACK );
 			case FORTUNE:		return Icons.get( Icons.COIN_SML );
 			case BORN_TALENT:	return Icons.get( Icons.TALENT );
-			case BOSS_LOOT: default:	return Icons.get( Icons.SKULL );
+			case BOSS_LOOT:		return Icons.get( Icons.SKULL );
+			case SEEDS:		return new ItemSprite( new Sungrass.Seed() );
+			case SHOP:		return Icons.get( Icons.BACKPACK_LRG );
+			case REROLL: default:	return Icons.get( Icons.SHUFFLE );
 		}
 	}
 

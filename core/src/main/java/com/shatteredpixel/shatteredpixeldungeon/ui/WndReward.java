@@ -22,6 +22,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.ui;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
@@ -49,12 +50,32 @@ public class WndReward extends Window {
 	private static final int BTN_GAP	= 5;
 	private static final int GAP		= 2;
 
+	private LootType type;
+
 	public WndReward( LootType type ){
 		super();
+
+		this.type = type;
 
 		IconTitle title = new IconTitle( Icons.get(Icons.SKULL), Messages.get(this, "title") );
 		title.setRect( 0, 0, WIDTH, 0 );
 		add( title );
+
+		//mod: fate rewrite imprint, one reroll per charge
+		if (ModHooks.rerollAvailable()){
+			IconButton btnReroll = new IconButton( Icons.get(Icons.SHUFFLE) ){
+				@Override
+				protected void onClick() {
+					super.onClick();
+					if (ModHooks.useReroll()){
+						WndReward.this.hide();
+						GameScene.show( new WndReward( type ) );
+					}
+				}
+			};
+			btnReroll.setRect( WIDTH - 16, 0, 16, 16 );
+			add( btnReroll );
+		}
 
 		RenderedTextBlock prompt = PixelScene.renderTextBlock( 6 );
 		prompt.text( Messages.get(this, "prompt"), WIDTH );
