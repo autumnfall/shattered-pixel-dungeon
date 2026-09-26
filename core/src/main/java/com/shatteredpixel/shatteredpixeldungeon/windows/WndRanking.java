@@ -28,6 +28,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.QuickSlot;
 import com.shatteredpixel.shatteredpixeldungeon.Rankings;
 import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
+import com.shatteredpixel.shatteredpixeldungeon.Settlement;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Belongings;
@@ -180,6 +181,10 @@ public class WndRanking extends WndTabbed {
 
 			if (Dungeon.hero != null && Dungeon.seed != -1){
 				GAP--;
+				//mod: reclaim space for the soul shards row when the copy-seed button is also shown
+				if (!Dungeon.daily && (DeviceCompat.isDebug() || Badges.isUnlocked(Badges.Badge.VICTORY))){
+					GAP--;
+				}
 			}
 			
 			float pos = title.bottom() + 1;
@@ -214,6 +219,11 @@ public class WndRanking extends WndTabbed {
 			} else {
 
 				pos = statSlot(this, Messages.get(this, "score"), num.format(Statistics.totalScore), pos);
+
+				if (!Dungeon.daily){
+					pos = statSlot(this, Messages.get(this, "shards"),
+							"+" + num.format(Settlement.calculate(record.win)), pos);
+				}
 
 				IconButton scoreInfo = new IconButton(Icons.get(Icons.INFO)) {
 					@Override
