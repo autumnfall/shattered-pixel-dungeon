@@ -45,14 +45,14 @@ public class MetaProgress {
 	public enum Imprint {
 		RATIONS    ("imprint_rations",	1, new int[]{15}),
 		IDENTIFY   ("imprint_identify",	1, new int[]{25}),
-		GOLD       ("imprint_gold",	1, new int[]{10, 25, 45, 70}),
-		BAG        ("imprint_bag",	2, new int[]{30, 70, 150, 350}),
-		FORTUNE    ("imprint_fortune",	2, new int[]{50, 110, 200}),
-		BORN_TALENT("born_talent",	3, new int[]{20, 50, 120, 300}),
-		BOSS_LOOT  ("imprint_boss_loot",	3, new int[]{100, 200, 350, 450}),
+		GOLD       ("imprint_gold",	1, new int[]{15, 35, 65, 105}),
+		BAG        ("imprint_bag",	2, new int[]{40, 90, 180, 360}),
+		FORTUNE    ("imprint_fortune",	2, new int[]{45, 100, 185}),
+		BORN_TALENT("born_talent",	3, new int[]{45, 110, 240, 420}),
+		BOSS_LOOT  ("imprint_boss_loot",	3, new int[]{110, 210, 350, 450}),
 		SEEDS      ("imprint_seeds",	1, new int[]{12, 25, 40}),
-		SHOP       ("imprint_shop",	2, new int[]{45, 90, 150}),
-		REROLL     ("imprint_reroll",	3, new int[]{90, 170, 260});
+		SHOP       ("imprint_shop",	2, new int[]{50, 105, 170}),
+		REROLL     ("imprint_reroll",	3, new int[]{80, 160, 250});
 
 		private String key;
 		private int tier;
