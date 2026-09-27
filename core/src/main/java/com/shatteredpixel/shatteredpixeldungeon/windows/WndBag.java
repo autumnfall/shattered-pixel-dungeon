@@ -110,7 +110,13 @@ public class WndBag extends WndTabbed {
 			equippedSlots++;
 		}
 		int totalSlots = equippedSlots + bag.capacity();
-		if (bag != Dungeon.hero.belongings.backpack){
+		if (bag == Dungeon.hero.belongings.backpack){
+			//bags held in the backpack count toward capacity but render as
+			//bottom tags, not grid slots
+			for (Item i : bag.items){
+				if (i instanceof Bag) totalSlots--;
+			}
+		} else {
 			totalSlots++; //the container itself occupies a slot
 		}
 		nRows = Math.max((int)Math.ceil(25/(float)nCols), (int)Math.ceil(totalSlots/(float)nCols));
