@@ -28,6 +28,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Goo;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Tengu;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.Torch;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.SmallRation;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfIdentify;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
@@ -45,11 +46,15 @@ public class ModHooks {
 		}
 		hero.belongings.backpack.bonusCapacity = MetaProgress.Imprint.BAG.level();
 		Dungeon.gold += MetaProgress.Imprint.GOLD.level()*100;
-		for (int i = 0; i < MetaProgress.Imprint.RATIONS.level(); i++){
+		//mod: starting supplies, lv1 ration / lv2 identify scroll / lv3 torch
+		if (MetaProgress.Imprint.SUPPLIES.level() >= 1){
 			new SmallRation().collect();
 		}
-		for (int i = 0; i < MetaProgress.Imprint.IDENTIFY.level(); i++){
-			new ScrollOfIdentify().collect();
+		if (MetaProgress.Imprint.SUPPLIES.level() >= 2){
+			new ScrollOfIdentify().identify().collect();
+		}
+		if (MetaProgress.Imprint.SUPPLIES.level() >= 3){
+			new Torch().collect();
 		}
 		for (int i = 0; i < MetaProgress.Imprint.SEEDS.level(); i++){
 			Generator.random( Generator.Category.SEED ).collect();

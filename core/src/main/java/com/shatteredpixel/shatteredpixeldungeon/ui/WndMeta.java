@@ -153,7 +153,7 @@ public class WndMeta extends Window {
 				}
 			}
 
-			float left = 0;
+			float left = Math.max( 0, (width - (tierButtons.size()*(ImprintButton.WIDTH+6) - 6))/2f );
 			float rowTop = pos;
 			float rowLabelBottom = pos;
 			for (ImprintButton btn : tierButtons){
@@ -242,7 +242,7 @@ public class WndMeta extends Window {
 			bg.y = y;
 
 			icon.x = x + (WIDTH - icon.width())/2f;
-			icon.y = y + 2;
+			icon.y = y + 2 + (16 - icon.height())/2f;
 			PixelScene.align( icon );
 
 			fill.x = x + 2;

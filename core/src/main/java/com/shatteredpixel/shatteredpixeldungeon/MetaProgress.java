@@ -38,21 +38,16 @@ public class MetaProgress {
 
 	private static boolean loaded = false;
 
-	public static final int DEBUG_STARTING_SHARDS = 500;
-
-	public static final int BORN_TALENT_MAX_LEVEL = 4;
-
 	public enum Imprint {
-		RATIONS    ("imprint_rations",	1, new int[]{15}),
-		IDENTIFY   ("imprint_identify",	1, new int[]{25}),
+		SUPPLIES   ("imprint_supplies",	1, new int[]{15, 35, 65}),
 		GOLD       ("imprint_gold",	1, new int[]{15, 35, 65, 105}),
+		SEEDS      ("imprint_seeds",	1, new int[]{15, 35, 65}),
 		BAG        ("imprint_bag",	2, new int[]{40, 90, 180, 360}),
-		FORTUNE    ("imprint_fortune",	2, new int[]{45, 100, 185}),
-		BORN_TALENT("born_talent",	3, new int[]{45, 110, 240, 420}),
-		BOSS_LOOT  ("imprint_boss_loot",	3, new int[]{110, 210, 350, 450}),
-		SEEDS      ("imprint_seeds",	1, new int[]{12, 25, 40}),
-		SHOP       ("imprint_shop",	2, new int[]{50, 105, 170}),
-		REROLL     ("imprint_reroll",	3, new int[]{80, 160, 250});
+		FORTUNE    ("imprint_fortune",	2, new int[]{40, 90, 180}),
+		SHOP       ("imprint_shop",	2, new int[]{40, 90, 180}),
+		BORN_TALENT("born_talent",	3, new int[]{120, 240, 390, 540}),
+		BOSS_LOOT  ("imprint_boss_loot",	3, new int[]{100, 200, 340, 470}),
+		REROLL     ("imprint_reroll",	3, new int[]{100, 200, 340});
 
 		private String key;
 		private int tier;
@@ -106,6 +101,13 @@ public class MetaProgress {
 				for (Imprint im : Imprint.values()){
 					imprintLevels[im.ordinal()] = bundle.getInt( im.key );
 				}
+				if (!bundle.contains( Imprint.SUPPLIES.key )){
+					//v2: starting rations and identify scrolls merged into supplies
+					imprintLevels[Imprint.SUPPLIES.ordinal()] = Math.max(
+							bundle.getInt( "imprint_rations" ),
+							bundle.getInt( "imprint_identify" ));
+					saveGlobal(true);
+				}
 				if (!bundle.contains( Imprint.BOSS_LOOT.key )){
 					imprintLevels[Imprint.BOSS_LOOT.ordinal()] =
 							  bundle.getInt( "imprint_goo" )
@@ -115,7 +117,7 @@ public class MetaProgress {
 					saveGlobal(true);
 				}
 			} catch (IOException e) {
-				soulShards = DEBUG_STARTING_SHARDS;
+				soulShards = 0;
 				imprintLevels = new int[Imprint.values().length];
 			}
 			loaded = true;

@@ -23,12 +23,8 @@ package com.shatteredpixel.shatteredpixeldungeon.windows;
 
 import com.shatteredpixel.shatteredpixeldungeon.MetaProgress;
 import com.shatteredpixel.shatteredpixeldungeon.MetaProgress.Imprint;
-import com.shatteredpixel.shatteredpixeldungeon.items.food.SmallRation;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfIdentify;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
-import com.shatteredpixel.shatteredpixeldungeon.plants.Sungrass;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RedButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
@@ -86,7 +82,7 @@ public class WndInfoImprint extends Window {
 		String key = imprint.name().toLowerCase( Locale.ENGLISH );
 
 		titlebar.label( Messages.titleCase(Messages.get(WndMeta.class, key))
-				+ "（" + imprint.level() + "/" + imprint.maxLevel() + "）", TITLE_COLOR );
+				+ "(" + imprint.level() + "/" + imprint.maxLevel() + ")", TITLE_COLOR );
 		titlebar.setRect( 0, 0, WIDTH, 0 );
 
 		Object descArg = imprint.level();
@@ -106,6 +102,8 @@ public class WndInfoImprint extends Window {
 			Object nextArg = imprint.level() + 1;
 			if (imprint == Imprint.BOSS_LOOT){
 				nextArg = Messages.get(WndMeta.class, "boss_" + nextArg);
+			} else if (imprint == Imprint.SUPPLIES){
+				nextArg = Messages.get(WndMeta.class, "supplies_next_" + nextArg);
 			}
 			text += "\n\n" + Messages.get(WndMeta.class, key + "_next", nextArg)
 					+ "\n" + Messages.get(this, "cost", cost);
@@ -125,18 +123,31 @@ public class WndInfoImprint extends Window {
 	}
 
 	public static Image iconFor( Imprint im ){
+		Image icon;
 		switch (im){
-			case RATIONS:		return new ItemSprite( new SmallRation() );
-			case IDENTIFY:		return new ItemSprite( new ScrollOfIdentify() );
-			case GOLD:		return Icons.get( Icons.GOLD );
-			case BAG:		return Icons.get( Icons.BACKPACK );
-			case FORTUNE:		return Icons.get( Icons.COIN_SML );
-			case BORN_TALENT:	return Icons.get( Icons.TALENT );
-			case BOSS_LOOT:		return Icons.get( Icons.SKULL );
-			case SEEDS:		return new ItemSprite( new Sungrass.Seed() );
-			case SHOP:		return Icons.get( Icons.BACKPACK_LRG );
-			case REROLL: default:	return Icons.get( Icons.SHUFFLE );
+			case SUPPLIES:		icon = Icons.get( Icons.SCROLL_COLOR );	break;
+			case GOLD:			icon = Icons.get( Icons.GOLD );			break;
+			case SEEDS:			icon = Icons.get( Icons.SEED );			break;
+			case BAG:			icon = Icons.get( Icons.BACKPACK_LRG );	break;
+			case FORTUNE:		icon = Icons.get( Icons.COIN_SML );		break;
+			case SHOP:			icon = Icons.get( Icons.CATALOG );		break;
+			case BORN_TALENT:	icon = Icons.get( Icons.TALENT );		break;
+			case BOSS_LOOT:		icon = Icons.get( Icons.SKULL );		break;
+			case REROLL: default:	icon = Icons.get( Icons.SHUFFLE );	break;
 		}
+
+		//mod: normalize icon sizes into a 16x16 box.
+		//Large icons shrink freely; small icons only upscale by whole
+		//factors so the pixel art stays crisp. Width/height are left alone:
+		//Visual.width() multiplies by scale, so mutating them would double-count.
+		float scale = Math.min( 16f/icon.width, 16f/icon.height );
+		if (scale > 1f){
+			scale = (float)Math.floor( scale );
+		}
+		if (scale != 1f){
+			icon.scale.set( scale, scale );
+		}
+		return icon;
 	}
 
 }
