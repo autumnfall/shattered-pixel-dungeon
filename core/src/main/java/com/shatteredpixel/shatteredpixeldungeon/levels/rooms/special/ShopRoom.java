@@ -360,10 +360,22 @@ public class ShopRoom extends SpecialRoom {
 					itemsToSpawn.add( Generator.randomUsingDefaults( Generator.Category.SCROLL ) );
 					break;
 				case 2:
-					itemsToSpawn.add( Generator.random( Generator.Category.SEED ) );
+					itemsToSpawn.add( new SmallRation() );
 					break;
 				case 3:
-					itemsToSpawn.add( new SmallRation() );
+					//same distribution as the shop's own random consumable slot
+					switch (Random.Int(4)){
+						case 0:
+							itemsToSpawn.add( new Bomb() );
+							break;
+						case 1:
+						case 2:
+							itemsToSpawn.add( new Bomb.DoubleBomb() );
+							break;
+						case 3:
+							itemsToSpawn.add( new Honeypot() );
+							break;
+					}
 					break;
 			}
 		}
