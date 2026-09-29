@@ -38,6 +38,9 @@ public class MetaProgress {
 
 	private static boolean loaded = false;
 
+	//mod: true only when meta.dat does not exist yet, i.e. a fresh install
+	private static boolean freshInstall = false;
+
 	public enum Imprint {
 		SUPPLIES   ("imprint_supplies",	1, new int[]{15, 35, 65}),
 		GOLD       ("imprint_gold",	1, new int[]{15, 35, 65, 105}),
@@ -122,6 +125,7 @@ public class MetaProgress {
 			} catch (IOException e) {
 				soulShards = 0;
 				imprintLevels = new int[Imprint.values().length];
+				freshInstall = true;
 			}
 			loaded = true;
 		}
@@ -151,6 +155,18 @@ public class MetaProgress {
 	public static int soulShards(){
 		loadGlobal();
 		return soulShards;
+	}
+
+	//mod: fresh install = no meta.dat yet; welcome popup shows once and grants a starting bonus
+	public static boolean isFreshInstall(){
+		loadGlobal();
+		return freshInstall;
+	}
+
+	public static void claimWelcomeBonus(){
+		loadGlobal();
+		freshInstall = false;
+		earnShards( 500 );
 	}
 
 	public static void earnShards( int amount ){
