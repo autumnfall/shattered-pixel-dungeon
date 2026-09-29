@@ -108,6 +108,8 @@ public class WndInfoImprint extends Window {
 				nextArg = Messages.get(WndMeta.class, "supplies_next_" + nextArg);
 			} else if (imprint == Imprint.TRAVEL_LIGHT){
 				nextArg = Messages.get(WndMeta.class, "travel_light_next_" + nextArg);
+			} else if (imprint == Imprint.SELF_RELIANCE){
+				nextArg = Messages.get(WndMeta.class, "self_reliance_next_" + nextArg);
 			}
 			text += "\n\n" + Messages.get(WndMeta.class, key + "_next", nextArg)
 					+ "\n" + Messages.get(this, "cost", cost);
