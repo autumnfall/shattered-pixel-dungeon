@@ -21,6 +21,9 @@
 
 package com.shatteredpixel.shatteredpixeldungeon;
 
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.CounterBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.DM300;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.DwarfKing;
@@ -28,9 +31,11 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Goo;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Tengu;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.Torch;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.SmallRation;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfIdentify;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
@@ -128,6 +133,61 @@ public class ModHooks {
 				GameScene.show( new WndReward( type ) );
 			}
 		});
+	}
+
+	//mod: divine ward imprint, per-run counter of wraith-free tomb/remains openings
+	public static class DivineWardTracker extends CounterBuff {}
+
+	public static boolean suppressWraiths( Hero hero ){
+		if (Dungeon.daily) return false;
+		int level = MetaProgress.Imprint.DIVINE_WARD.level();
+		if (level <= 0) return false;
+		DivineWardTracker tracker = Buff.affect( hero, DivineWardTracker.class );
+		if (tracker.count() < level){
+			tracker.countUp( 1 );
+			return true;
+		}
+		return false;
+	}
+
+	//mod: self-reliance imprint, empty ring (and artifact, at lv1) slots act as +1 ring of wealth
+	public static int selfRelianceBonus( Char target ){
+		if (Dungeon.daily || !(target instanceof Hero)) return 0;
+		int level = MetaProgress.Imprint.SELF_RELIANCE.level();
+		if (level <= 0) return 0;
+		Hero hero = (Hero) target;
+		if (hero.belongings.ring() != null) return 0;
+		if (level < 2 && hero.belongings.artifact() != null) return 0;
+		return 1;
+	}
+
+	//mod: travel light imprint, bonuses while equipping base-strength-10 (tier-1) gear
+	public static boolean travelLightWeaponMinBonus( KindOfWeapon weapon ){
+		if (Dungeon.daily || MetaProgress.Imprint.TRAVEL_LIGHT.level() < 1) return false;
+		return Dungeon.hero != null && Dungeon.hero.belongings.weapon() == weapon
+				&& weapon instanceof Weapon && ((Weapon)weapon).STRReq( 0 ) == 10;
+	}
+
+	public static int travelLightWeaponMin( int min, KindOfWeapon weapon ){
+		if (travelLightWeaponMinBonus( weapon )) return min + 1;
+		return min;
+	}
+
+	public static int travelLightArmorMinDr( int minDr ){
+		if (Dungeon.daily || MetaProgress.Imprint.TRAVEL_LIGHT.level() < 2) return minDr;
+		if (Dungeon.hero != null && Dungeon.hero.belongings.armor() != null
+				&& Dungeon.hero.belongings.armor().STRReq( 0 ) == 10){
+			return minDr + 1;
+		}
+		return minDr;
+	}
+
+	public static float travelLightSpeedMult( Hero hero ){
+		if (Dungeon.daily || MetaProgress.Imprint.TRAVEL_LIGHT.level() < 3) return 1f;
+		int lightGear = 0;
+		if (hero.belongings.weapon() instanceof Weapon && ((Weapon)hero.belongings.weapon()).STRReq( 0 ) == 10) lightGear++;
+		if (hero.belongings.armor() != null && hero.belongings.armor().STRReq( 0 ) == 10) lightGear++;
+		return 1f + 0.05f*lightGear;
 	}
 
 }

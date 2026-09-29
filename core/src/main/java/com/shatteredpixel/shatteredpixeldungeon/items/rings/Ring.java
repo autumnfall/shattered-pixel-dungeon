@@ -23,6 +23,7 @@ package com.shatteredpixel.shatteredpixeldungeon.items.rings;
 
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
@@ -381,6 +382,9 @@ public class Ring extends KindofMisc {
 				&& target.buff(SpiritForm.SpiritFormBuff.class).ring() != null
 				&& target.buff(SpiritForm.SpiritFormBuff.class).ring().buffClass == type){
 			bonus += target.buff(SpiritForm.SpiritFormBuff.class).ring().soloBuffedBonus();
+		}
+		if (type == RingOfWealth.Wealth.class){
+			bonus += ModHooks.selfRelianceBonus(target);
 		}
 		return bonus;
 	}

@@ -647,7 +647,7 @@ public class Hero extends Char {
 		int dr = super.drRoll();
 
 		if (belongings.armor() != null) {
-			int armDr = Random.NormalIntRange( belongings.armor().DRMin(), belongings.armor().DRMax());
+			int armDr = Random.NormalIntRange( ModHooks.travelLightArmorMinDr(belongings.armor().DRMin()), belongings.armor().DRMax());
 			if (STR() < belongings.armor().STRReq()){
 				armDr -= 2*(belongings.armor().STRReq() - STR());
 			}
@@ -788,7 +788,7 @@ public class Hero extends Char {
 			return 0;
 		}
 
-		float delay = 1f;
+		float delay = 1f / ModHooks.travelLightSpeedMult( this );
 
 		if (!RingOfForce.fightingUnarmed(this)) {
 			

@@ -23,6 +23,8 @@ package com.shatteredpixel.shatteredpixeldungeon.windows;
 
 import com.shatteredpixel.shatteredpixeldungeon.MetaProgress;
 import com.shatteredpixel.shatteredpixeldungeon.MetaProgress.Imprint;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
@@ -104,6 +106,8 @@ public class WndInfoImprint extends Window {
 				nextArg = Messages.get(WndMeta.class, "boss_" + nextArg);
 			} else if (imprint == Imprint.SUPPLIES){
 				nextArg = Messages.get(WndMeta.class, "supplies_next_" + nextArg);
+			} else if (imprint == Imprint.TRAVEL_LIGHT){
+				nextArg = Messages.get(WndMeta.class, "travel_light_next_" + nextArg);
 			}
 			text += "\n\n" + Messages.get(WndMeta.class, key + "_next", nextArg)
 					+ "\n" + Messages.get(this, "cost", cost);
@@ -133,6 +137,9 @@ public class WndInfoImprint extends Window {
 			case SHOP:			icon = Icons.get( Icons.CATALOG );		break;
 			case BORN_TALENT:	icon = Icons.get( Icons.TALENT );		break;
 			case BOSS_LOOT:		icon = Icons.get( Icons.SKULL );		break;
+			case DIVINE_WARD:	icon = new ItemSprite( ItemSpriteSheet.ANKH );	break;
+			case SELF_RELIANCE:	icon = new ItemSprite( ItemSpriteSheet.RING_AMETHYST );	break;
+			case TRAVEL_LIGHT:	icon = new ItemSprite( ItemSpriteSheet.DAGGER );	break;
 			case REROLL: default:	icon = Icons.get( Icons.SHUFFLE );	break;
 		}
 
