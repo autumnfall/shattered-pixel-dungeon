@@ -31,6 +31,7 @@ public class MetaProgress {
 	public static final String META_FILE	= "meta.dat";
 
 	private static final String SOUL_SHARDS	= "soul_shards";
+	private static final String WELCOMED		= "welcomed";
 
 	private static int soulShards = 0;
 
@@ -40,6 +41,8 @@ public class MetaProgress {
 
 	//mod: true only when meta.dat does not exist yet, i.e. a fresh install
 	private static boolean freshInstall = false;
+
+	private static boolean welcomed = false;
 
 	public enum Imprint {
 		SUPPLIES   ("imprint_supplies",	1, new int[]{15, 35, 65}),
@@ -104,6 +107,7 @@ public class MetaProgress {
 			try {
 				Bundle bundle = FileUtils.bundleFromFile( META_FILE );
 				soulShards = bundle.getInt( SOUL_SHARDS );
+				welcomed = bundle.getBoolean( WELCOMED );
 				for (Imprint im : Imprint.values()){
 					imprintLevels[im.ordinal()] = bundle.getInt( im.key );
 				}
@@ -123,9 +127,11 @@ public class MetaProgress {
 					saveGlobal(true);
 				}
 			} catch (IOException e) {
-				soulShards = 0;
 				imprintLevels = new int[Imprint.values().length];
+				//mod: fresh installs start with a small soul shard reserve, persisted immediately
 				freshInstall = true;
+				soulShards = 500;
+				saveGlobal(true);
 			}
 			loaded = true;
 		}
@@ -140,6 +146,7 @@ public class MetaProgress {
 
 			Bundle bundle = new Bundle();
 			bundle.put( SOUL_SHARDS, soulShards );
+			bundle.put( WELCOMED, welcomed );
 			for (Imprint im : Imprint.values()){
 				bundle.put( im.key, imprintLevels[im.ordinal()] );
 			}
@@ -157,16 +164,17 @@ public class MetaProgress {
 		return soulShards;
 	}
 
-	//mod: fresh install = no meta.dat yet; welcome popup shows once and grants a starting bonus
-	public static boolean isFreshInstall(){
+	//mod: the welcome popup shows once per fresh install, purely informational;
+	//the starting reserve is already baked into the first meta.dat write
+	public static boolean needsWelcome(){
 		loadGlobal();
-		return freshInstall;
+		return freshInstall && !welcomed;
 	}
 
-	public static void claimWelcomeBonus(){
+	public static void markWelcomed(){
 		loadGlobal();
-		freshInstall = false;
-		earnShards( 500 );
+		welcomed = true;
+		saveGlobal(true);
 	}
 
 	public static void earnShards( int amount ){

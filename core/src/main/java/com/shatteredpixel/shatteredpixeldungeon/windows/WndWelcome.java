@@ -29,21 +29,23 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.RedButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
 
-//mod: one-time welcome popup on fresh installs, explains the soul shard
-//meta-progression and grants a starting bonus when acknowledged
+//mod: one-time welcome popup on fresh installs, purely informational;
+//new installs already start with a soul shard reserve baked into meta.dat
 public class WndWelcome extends Window {
 
-	private static final int WIDTH = 140;
+	private static final int WIDTH_MAX = 140;
 
 	public WndWelcome(){
 		super();
 
+		int width = Math.min( WIDTH_MAX, (int)PixelScene.uiCamera.width - 8 );
+
 		IconTitle title = new IconTitle( Icons.get( Icons.TALENT ), Messages.get( this, "title" ) );
-		title.setRect( 0, 0, WIDTH, 0 );
+		title.setRect( 0, 0, width, 0 );
 		add( title );
 
 		RenderedTextBlock info = PixelScene.renderTextBlock( Messages.get( this, "desc" ), 6 );
-		info.maxWidth( WIDTH );
+		info.maxWidth( width );
 		info.setPos( 0, title.bottom() + 2 );
 		add( info );
 
@@ -51,14 +53,14 @@ public class WndWelcome extends Window {
 			@Override
 			protected void onClick() {
 				super.onClick();
-				MetaProgress.claimWelcomeBonus();
+				MetaProgress.markWelcomed();
 				hide();
 			}
 		};
-		btnOkay.setRect( 0, info.bottom() + 4, WIDTH, 18 );
+		btnOkay.setRect( 0, info.bottom() + 4, width, 18 );
 		add( btnOkay );
 
-		resize( WIDTH, (int) btnOkay.bottom() );
+		resize( width, (int) btnOkay.bottom() );
 	}
 
 }

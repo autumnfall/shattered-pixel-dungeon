@@ -26,6 +26,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Chrome;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.GamesInProgress;
+import com.shatteredpixel.shatteredpixeldungeon.MetaProgress;
 import com.shatteredpixel.shatteredpixeldungeon.Rankings;
 import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
@@ -40,6 +41,7 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.StyledButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.TitleBackground;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndError;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndHardNotification;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndWelcome;
 import com.watabou.glwrap.Blending;
 import com.watabou.input.ControllerHandler;
 import com.watabou.noosa.Camera;
@@ -233,6 +235,11 @@ public class WelcomeScene extends PixelScene {
 					//do nothing, must press the okay button
 				}
 			});
+		}
+
+		//mod: one-time welcome popup for fresh installs, shown on the very first screen
+		if (MetaProgress.needsWelcome()) {
+			add(new WndWelcome());
 		}
 	}
 

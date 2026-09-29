@@ -311,8 +311,8 @@ public class TitleScene extends PixelScene {
 			add(new WndVictoryCongrats());
 		}
 
-		//mod: one-time welcome popup on fresh installs, grants a starting soul shard bonus
-		if (MetaProgress.isFreshInstall()) {
+		//mod: one-time welcome popup on fresh installs, explains the soul shard meta-progression
+		if (MetaProgress.needsWelcome()) {
 			add(new WndWelcome());
 		}
 
