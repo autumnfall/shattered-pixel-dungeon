@@ -87,13 +87,8 @@ public class WndInfoImprint extends Window {
 				+ "(" + imprint.level() + "/" + imprint.maxLevel() + ")", TITLE_COLOR );
 		titlebar.setRect( 0, 0, WIDTH, 0 );
 
-		Object descArg = imprint.level();
-		if (imprint == Imprint.GOLD){
-			descArg = imprint.level() * 100;
-		} else if (imprint == Imprint.FORTUNE){
-			descArg = imprint.level() * 10;
-		}
-		String text = Messages.get(WndMeta.class, key + "_desc", descArg);
+		//mod: descriptions are static per-rank text in the vanilla talent style
+		String text = Messages.get(WndMeta.class, key + "_desc");
 
 		int cost = imprint.upgradeCost();
 		if (!MetaProgress.isTierUnlocked(imprint.tier())){
@@ -101,18 +96,7 @@ public class WndInfoImprint extends Window {
 			btnUpgrade.text( Messages.get(this, "locked") );
 			btnUpgrade.enable( false );
 		} else if (cost >= 0){
-			Object nextArg = imprint.level() + 1;
-			if (imprint == Imprint.BOSS_LOOT){
-				nextArg = Messages.get(WndMeta.class, "boss_" + nextArg);
-			} else if (imprint == Imprint.SUPPLIES){
-				nextArg = Messages.get(WndMeta.class, "supplies_next_" + nextArg);
-			} else if (imprint == Imprint.TRAVEL_LIGHT){
-				nextArg = Messages.get(WndMeta.class, "travel_light_next_" + nextArg);
-			} else if (imprint == Imprint.SELF_RELIANCE){
-				nextArg = Messages.get(WndMeta.class, "self_reliance_next_" + nextArg);
-			}
-			text += "\n\n" + Messages.get(WndMeta.class, key + "_next", nextArg)
-					+ "\n" + Messages.get(this, "cost", cost);
+			text += "\n\n" + Messages.get(this, "cost", cost);
 			btnUpgrade.text( Messages.get(this, "upgrade", cost) );
 			btnUpgrade.enable( MetaProgress.soulShards() >= cost );
 		} else {
