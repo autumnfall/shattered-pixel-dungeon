@@ -351,7 +351,7 @@ public class ShopRoom extends SpecialRoom {
 		itemsToSpawn.add( rare );
 
 		//mod: boutique imprint, every shop stocks a few extra goods
-		for (int i = 0; i < MetaProgress.Imprint.SHOP.level(); i++){
+		for (int i = 0; i < MetaProgress.Imprint.SHOP.runLevel(); i++){
 			switch (Random.Int(4)){
 				case 0: default:
 					itemsToSpawn.add( Generator.randomUsingDefaults( Generator.Category.POTION ) );

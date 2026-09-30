@@ -33,9 +33,15 @@ public class MetaProgress {
 	private static final String SOUL_SHARDS	= "soul_shards";
 	private static final String WELCOMED		= "welcomed";
 
+	private static final String RUN_SNAPSHOT	= "imprint_snapshot";
+
 	private static int soulShards = 0;
 
 	private static int[] imprintLevels = new int[Imprint.values().length];
+
+	//mod: per-run copy of imprint levels, taken at hero creation and stored in the
+	//run save, so mid-run meta edits cannot alter an in-progress run
+	private static int[] runSnapshot = null;
 
 	private static boolean loaded = false;
 
@@ -79,6 +85,14 @@ public class MetaProgress {
 		public int level(){
 			loadGlobal();
 			return imprintLevels[ordinal()];
+		}
+
+		//mod: level effective for the current run; frozen at hero creation
+		public int runLevel(){
+			if (runSnapshot != null){
+				return runSnapshot[ordinal()];
+			}
+			return level();
 		}
 
 		public int upgradeCost(){
@@ -156,6 +170,30 @@ public class MetaProgress {
 			} catch (IOException e) {
 				ShatteredPixelDungeon.reportException(e);
 			}
+		}
+	}
+
+	public static void takeRunSnapshot(){
+		loadGlobal();
+		runSnapshot = imprintLevels.clone();
+	}
+
+	public static void clearRunSnapshot(){
+		runSnapshot = null;
+	}
+
+	public static void storeRunSnapshot( Bundle bundle ){
+		if (runSnapshot != null){
+			bundle.put( RUN_SNAPSHOT, runSnapshot );
+		}
+	}
+
+	public static void restoreRunSnapshot( Bundle bundle ){
+		if (bundle.contains( RUN_SNAPSHOT )){
+			runSnapshot = bundle.getIntArray( RUN_SNAPSHOT );
+		} else {
+			//runs started before snapshotting: freeze at current global levels
+			takeRunSnapshot();
 		}
 	}
 

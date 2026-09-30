@@ -236,6 +236,8 @@ public class Dungeon {
 		challenges = SPDSettings.challenges();
 		mobsToChampion = 1;
 
+		MetaProgress.clearRunSnapshot();
+
 		Actor.clear();
 		Actor.resetNextID();
 
@@ -669,6 +671,7 @@ public class Dungeon {
 			SecretRoom.storeRoomsInBundle( bundle );
 			
 			Statistics.storeInBundle( bundle );
+			MetaProgress.storeRunSnapshot( bundle );
 			Notes.storeInBundle( bundle );
 			Generator.storeInBundle( bundle );
 
@@ -819,6 +822,7 @@ public class Dungeon {
 		energy = bundle.getInt( ENERGY );
 
 		Statistics.restoreFromBundle( bundle );
+		MetaProgress.restoreRunSnapshot( bundle );
 		Generator.restoreFromBundle( bundle );
 
 	}

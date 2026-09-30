@@ -49,6 +49,9 @@ public class ModHooks {
 		if (Dungeon.daily){
 			return;
 		}
+		//mod: freeze a per-run copy of imprint levels before applying start-of-run effects,
+		//so meta edits made mid-run cannot alter this run
+		MetaProgress.takeRunSnapshot();
 		hero.belongings.backpack.bonusCapacity = MetaProgress.Imprint.BAG.level();
 		Dungeon.gold += MetaProgress.Imprint.GOLD.level()*100;
 		//mod: starting supplies, lv1 ration / lv2 identify scroll / lv3 torch
@@ -100,21 +103,21 @@ public class ModHooks {
 	public static int bonusTalentPoints( Hero hero, int tier ){
 		//each imprint level grants +1 talent point to one more tier, awarded as tiers unlock,
 		//mirroring the potion of divine inspiration
-		if (tier >= 1 && tier <= MetaProgress.Imprint.BORN_TALENT.level()){
+		if (tier >= 1 && tier <= MetaProgress.Imprint.BORN_TALENT.runLevel()){
 			return 1;
 		}
 		return 0;
 	}
 
 	public static int modifyGoldPickup( int quantity ){
-		return Math.round( quantity * (1 + 0.1f*MetaProgress.Imprint.FORTUNE.level()) );
+		return Math.round( quantity * (1 + 0.1f*MetaProgress.Imprint.FORTUNE.runLevel()) );
 	}
 
 	public static void onBossKilled( Mob boss ){
 		if (Dungeon.daily){
 			return;
 		}
-		int lootLvl = MetaProgress.Imprint.BOSS_LOOT.level();
+		int lootLvl = MetaProgress.Imprint.BOSS_LOOT.runLevel();
 		if (boss instanceof Goo && lootLvl >= 1){
 			showReward( WndReward.LootType.GOO );
 		} else if (boss instanceof Tengu && lootLvl >= 2){
@@ -140,7 +143,7 @@ public class ModHooks {
 
 	public static boolean suppressWraiths( Hero hero ){
 		if (Dungeon.daily) return false;
-		int level = MetaProgress.Imprint.DIVINE_WARD.level();
+		int level = MetaProgress.Imprint.DIVINE_WARD.runLevel();
 		if (level <= 0) return false;
 		DivineWardTracker tracker = Buff.affect( hero, DivineWardTracker.class );
 		if (tracker.count() < level){
@@ -153,7 +156,7 @@ public class ModHooks {
 	//mod: self-reliance imprint, empty ring (and artifact, at lv1) slots act as +1 ring of wealth
 	public static int selfRelianceBonus( Char target ){
 		if (Dungeon.daily || !(target instanceof Hero)) return 0;
-		int level = MetaProgress.Imprint.SELF_RELIANCE.level();
+		int level = MetaProgress.Imprint.SELF_RELIANCE.runLevel();
 		if (level <= 0) return 0;
 		Hero hero = (Hero) target;
 		if (hero.belongings.ring() != null) return 0;
@@ -163,7 +166,7 @@ public class ModHooks {
 
 	//mod: travel light imprint, bonuses while equipping base-strength-10 (tier-1) gear
 	public static boolean travelLightWeaponMinBonus( KindOfWeapon weapon ){
-		if (Dungeon.daily || MetaProgress.Imprint.TRAVEL_LIGHT.level() < 1) return false;
+		if (Dungeon.daily || MetaProgress.Imprint.TRAVEL_LIGHT.runLevel() < 1) return false;
 		return Dungeon.hero != null && Dungeon.hero.belongings.weapon() == weapon
 				&& weapon instanceof Weapon && ((Weapon)weapon).STRReq( 0 ) == 10;
 	}
@@ -174,7 +177,7 @@ public class ModHooks {
 	}
 
 	public static int travelLightArmorMinDr( int minDr ){
-		if (Dungeon.daily || MetaProgress.Imprint.TRAVEL_LIGHT.level() < 2) return minDr;
+		if (Dungeon.daily || MetaProgress.Imprint.TRAVEL_LIGHT.runLevel() < 2) return minDr;
 		if (Dungeon.hero != null && Dungeon.hero.belongings.armor() != null
 				&& Dungeon.hero.belongings.armor().STRReq( 0 ) == 10){
 			return minDr + 1;
@@ -183,7 +186,7 @@ public class ModHooks {
 	}
 
 	public static float travelLightSpeedMult( Hero hero ){
-		if (Dungeon.daily || MetaProgress.Imprint.TRAVEL_LIGHT.level() < 3) return 1f;
+		if (Dungeon.daily || MetaProgress.Imprint.TRAVEL_LIGHT.runLevel() < 3) return 1f;
 		int lightGear = 0;
 		if (hero.belongings.weapon() instanceof Weapon && ((Weapon)hero.belongings.weapon()).STRReq( 0 ) == 10) lightGear++;
 		if (hero.belongings.armor() != null && hero.belongings.armor().STRReq( 0 ) == 10) lightGear++;
