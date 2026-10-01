@@ -126,6 +126,7 @@ public class WndInfoImprint extends Window {
 			case DIVINE_WARD:	icon = new ItemSprite( ItemSpriteSheet.ANKH );	break;
 			case SELF_RELIANCE:	icon = new ItemSprite( ItemSpriteSheet.RING_AMETHYST );	break;
 			case TRAVEL_LIGHT:	icon = new ItemSprite( ItemSpriteSheet.DAGGER );	break;
+			case GAMBLE:		icon = Icons.get( Icons.COIN_SML );		break;
 			case REROLL: default:	icon = Icons.get( Icons.SHUFFLE );	break;
 		}
 

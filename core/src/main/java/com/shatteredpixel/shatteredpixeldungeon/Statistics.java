@@ -79,6 +79,9 @@ public class Statistics {
 
 	//mod: fate rewrite imprint, reroll charges for reward choices, reset per run
 	public static int rerollCharges = 0;
+
+	//mod: soul crystal shop imprint, shard cost for the shop gamble, doubles per purchase, reset per run
+	public static int gambleCost = 50;
 	
 	public static void reset() {
 		
@@ -126,6 +129,7 @@ public class Statistics {
 		ascended = false;
 
 		rerollCharges = 0;
+		gambleCost = 50;
 		
 	}
 	
@@ -171,6 +175,7 @@ public class Statistics {
 	private static final String WON		        = "won";
 	private static final String ASCENDED		= "ascended";
 	private static final String REROLL_CHARGES  = "reroll_charges";
+	private static final String GAMBLE_COST     = "gamble_cost";
 	
 	public static void storeInBundle( Bundle bundle ) {
 		bundle.put( GOLD,		goldCollected );
@@ -218,6 +223,7 @@ public class Statistics {
 		bundle.put( WON,        gameWon );
 		bundle.put( ASCENDED,   ascended );
 		bundle.put( REROLL_CHARGES, rerollCharges );
+		bundle.put( GAMBLE_COST, gambleCost );
 	}
 	
 	public static void restoreFromBundle( Bundle bundle ) {
@@ -275,6 +281,8 @@ public class Statistics {
 		ascended        = bundle.getBoolean( ASCENDED );
 		if (bundle.contains( REROLL_CHARGES )) rerollCharges = bundle.getInt( REROLL_CHARGES );
 		else                                     rerollCharges = 0;
+		if (bundle.contains( GAMBLE_COST ))    gambleCost = bundle.getInt( GAMBLE_COST );
+		else                                   gambleCost = 50;
 	}
 	
 	public static void preview( GamesInProgress.Info info, Bundle bundle ){

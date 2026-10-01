@@ -45,8 +45,8 @@ public class WndMeta extends Window {
 	private RenderedTextBlock shards;
 	private RenderedTextBlock note;
 
-	private final RenderedTextBlock[] tierTitles	= new RenderedTextBlock[3];
-	private final ColorBlock[] seps			= new ColorBlock[3];
+	private final RenderedTextBlock[] tierTitles	= new RenderedTextBlock[4];
+	private final ColorBlock[] seps			= new ColorBlock[4];
 	private final ArrayList<ImprintButton> buttons	= new ArrayList<>();
 
 	private StyledButton btnReset;
@@ -71,7 +71,7 @@ public class WndMeta extends Window {
 		note.hardlight( 0x888888 );
 		add( note );
 
-		for (int i = 0; i < 3; i++){
+		for (int i = 0; i < 4; i++){
 			tierTitles[i] = PixelScene.renderTextBlock( 6 );
 			tierTitles[i].hardlight( TITLE_COLOR );
 			add( tierTitles[i] );
@@ -117,7 +117,7 @@ public class WndMeta extends Window {
 
 		shards.text( Messages.get(this, "shards", shownShards) );
 
-		for (int i = 0; i < 3; i++){
+		for (int i = 0; i < 4; i++){
 			if (MetaProgress.isTierUnlocked(i + 1)){
 				tierTitles[i].text( Messages.get(this, "tier", i + 1) );
 			} else {
@@ -141,7 +141,7 @@ public class WndMeta extends Window {
 		note.setPos( 0, shards.bottom() + 1 );
 		pos = note.bottom() + 3;
 
-		for (int tier = 1; tier <= 3; tier++){
+		for (int tier = 1; tier <= 4; tier++){
 			tierTitles[tier-1].maxWidth( width );
 			tierTitles[tier-1].setPos( (width - tierTitles[tier-1].width())/2f, pos );
 			pos = tierTitles[tier-1].bottom() + 2;

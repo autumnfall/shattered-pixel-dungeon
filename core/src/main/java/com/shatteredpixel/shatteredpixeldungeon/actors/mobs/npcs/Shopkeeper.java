@@ -22,6 +22,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.MetaProgress;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -33,8 +34,10 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.ElmoParticle;
+import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Notes;
@@ -56,6 +59,7 @@ import com.watabou.utils.Bundlable;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Callback;
 import com.watabou.utils.PathFinder;
+import com.watabou.utils.Random;
 
 import java.util.ArrayList;
 
@@ -242,10 +246,17 @@ public class Shopkeeper extends NPC {
 		Game.runOnRenderThread(new Callback() {
 			@Override
 			public void call() {
-				String[] options = new String[2+ buybackItems.size()];
+				//mod: soul crystal shop imprint, adds a shard gamble option
+				final boolean gambleAvailable = !Dungeon.daily
+						&& MetaProgress.Imprint.GAMBLE.level() >= 1;
+				final int buybackOffset = gambleAvailable ? 3 : 2;
+				String[] options = new String[buybackOffset + buybackItems.size()];
 				int maxLen = PixelScene.landscape() ? 30 : 25;
 				int i = 0;
 				options[i++] = Messages.get(Shopkeeper.this, "sell");
+				if (gambleAvailable){
+					options[i++] = Messages.get(Shopkeeper.this, "gamble", Statistics.gambleCost);
+				}
 				options[i++] = Messages.get(Shopkeeper.this, "talk");
 				for (Item item : buybackItems){
 					options[i] = Messages.get(Heap.class, "for_sale", item.value(), Messages.titleCase(item.title()));
@@ -259,11 +270,13 @@ public class Shopkeeper extends NPC {
 						super.onSelect(index);
 						if (index == 0){
 							sell();
-						} else if (index == 1){
+						} else if (gambleAvailable && index == 1){
+							soulGamble();
+						} else if (index == buybackOffset-1){
 							GameScene.show(new WndTitledMessage(sprite(), Messages.titleCase(name()), chatText()));
-						} else if (index > 1){
+						} else if (index >= buybackOffset){
 							GLog.i(Messages.get(Shopkeeper.this, "buyback"));
-							Item returned = buybackItems.remove(index-2);
+							Item returned = buybackItems.remove(index-buybackOffset);
 							Dungeon.gold -= returned.value();
 							Statistics.goldCollected -= returned.value();
 							if (returned instanceof MissileWeapon && returned.isUpgradable()){
@@ -277,8 +290,10 @@ public class Shopkeeper extends NPC {
 
 					@Override
 					protected boolean enabled(int index) {
-						if (index > 1){
-							return Dungeon.gold >= buybackItems.get(index-2).value();
+						if (index >= buybackOffset){
+							return Dungeon.gold >= buybackItems.get(index-buybackOffset).value();
+						} else if (gambleAvailable && index == 1){
+							return MetaProgress.soulShards() >= Statistics.gambleCost;
 						} else {
 							return super.enabled(index);
 						}
@@ -286,13 +301,13 @@ public class Shopkeeper extends NPC {
 
 					@Override
 					protected boolean hasIcon(int index) {
-						return index > 1;
+						return index >= buybackOffset;
 					}
 
 					@Override
 					protected Image getIcon(int index) {
-						if (index > 1){
-							return new ItemSprite(buybackItems.get(index-2));
+						if (index >= buybackOffset){
+							return new ItemSprite(buybackItems.get(index-buybackOffset));
 						}
 						return null;
 					}
@@ -306,6 +321,50 @@ public class Shopkeeper extends NPC {
 			}
 		});
 		return true;
+	}
+
+	//mod: soul crystal shop imprint, spend meta shards for tier-matched equipment,
+	//cost doubles per purchase, progress is shared across all shops in the run
+	private void soulGamble(){
+		final int cost = Statistics.gambleCost;
+		GameScene.show(new WndOptions(
+				Messages.get(this, "gamble_title"),
+				Messages.get(this, "gamble_body", cost),
+				Messages.get(this, "gamble_yes", cost),
+				Messages.get(this, "gamble_no")){
+			@Override
+			protected void onSelect(int index) {
+				super.onSelect(index);
+				if (index == 0 && MetaProgress.spendShards(cost)){
+					Statistics.gambleCost *= 2;
+
+					//prize tier matches the shop stock of the current floor
+					int floorSet = Math.min( 4, Dungeon.depth/5 );
+					Item prize;
+					switch (Random.Int(3)){
+						case 0: default:
+							prize = Generator.random( Generator.wepTiers[floorSet] );
+							break;
+						case 1:
+							Armor a;
+							int tries = 0;
+							do {
+								a = Generator.randomArmor( floorSet );
+								tries++;
+							} while (a.tier != floorSet+1 && tries < 50);
+							prize = a;
+							break;
+						case 2:
+							prize = Generator.random( Generator.misTiers[floorSet] );
+							break;
+					}
+					if (!prize.doPickUp( Dungeon.hero )){
+						Dungeon.level.drop( prize, Dungeon.hero.pos ).sprite.drop();
+					}
+					GLog.p( Messages.get(Shopkeeper.this, "gamble_result", Messages.titleCase(prize.title())) );
+				}
+			}
+		});
 	}
 
 	public String chatText(){

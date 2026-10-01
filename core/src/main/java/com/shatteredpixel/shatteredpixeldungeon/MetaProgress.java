@@ -62,7 +62,8 @@ public class MetaProgress {
 		BORN_TALENT("born_talent",	3, new int[]{120, 240, 390, 540}),
 		BOSS_LOOT  ("imprint_boss_loot",	3, new int[]{100, 200, 340, 470}),
 		REROLL     ("imprint_reroll",	3, new int[]{100, 200, 340}),
-		TRAVEL_LIGHT("imprint_travel_light",	3, new int[]{100, 200, 340});
+		TRAVEL_LIGHT("imprint_travel_light",	3, new int[]{100, 200, 340}),
+		GAMBLE     ("imprint_gamble",	4, new int[]{100});
 
 		private String key;
 		private int tier;
