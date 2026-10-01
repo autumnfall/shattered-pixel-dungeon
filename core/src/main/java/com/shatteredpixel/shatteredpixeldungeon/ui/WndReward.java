@@ -187,6 +187,13 @@ public class WndReward extends Window {
 	}
 
 	private Item prep( Item item, int level ){
+		//mod: rewards are never cursed, strip rolled curse enchantments/glyphs, not just the cursed flag
+		if (item instanceof Weapon && ((Weapon) item).hasCurseEnchant()){
+			((Weapon) item).enchant( null );
+		}
+		if (item instanceof Armor && ((Armor) item).hasCurseGlyph()){
+			((Armor) item).inscribe( null );
+		}
 		if (level > 0){
 			item.upgrade( level );
 		}
