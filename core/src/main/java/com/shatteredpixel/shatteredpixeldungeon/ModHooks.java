@@ -32,10 +32,10 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Tengu;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon;
-import com.shatteredpixel.shatteredpixeldungeon.items.Torch;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.SmallRation;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfIdentify;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.darts.Dart;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
@@ -54,7 +54,7 @@ public class ModHooks {
 		MetaProgress.takeRunSnapshot();
 		hero.belongings.backpack.bonusCapacity = MetaProgress.Imprint.BAG.level();
 		Dungeon.gold += MetaProgress.Imprint.GOLD.level()*100;
-		//mod: starting supplies, lv1 ration / lv2 identify scroll / lv3 torch
+		//mod: starting supplies, lv1 ration / lv2 identify scroll / lv3 darts
 		if (MetaProgress.Imprint.SUPPLIES.level() >= 1){
 			new SmallRation().collect();
 		}
@@ -62,7 +62,7 @@ public class ModHooks {
 			new ScrollOfIdentify().identify().collect();
 		}
 		if (MetaProgress.Imprint.SUPPLIES.level() >= 3){
-			new Torch().collect();
+			new Dart().quantity(2).collect();
 		}
 		for (int i = 0; i < MetaProgress.Imprint.SEEDS.level(); i++){
 			Generator.random( Generator.Category.SEED ).collect();
