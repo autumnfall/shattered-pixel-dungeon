@@ -24,6 +24,7 @@ package com.shatteredpixel.shatteredpixeldungeon.items.trinkets;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
@@ -37,6 +38,8 @@ import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
+import com.shatteredpixel.shatteredpixeldungeon.ui.IconButton;
+import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
 import com.shatteredpixel.shatteredpixeldungeon.ui.ItemButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RedButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
@@ -84,17 +87,45 @@ public class TrinketCatalyst extends Item {
 
 	private ArrayList<Trinket> rolledTrinkets = new ArrayList<>();
 
+	//mod: fate rewrite reroll, every class rolled on this catalyst is remembered
+	//and excluded from future rolls, so rerolled options are always completely new
+	private ArrayList<Class<?>> seenTrinketClasses = new ArrayList<>();
+
 	public boolean hasRolledTrinkets(){
 		return !rolledTrinkets.isEmpty();
 	}
 
+	private void rollTrinkets(){
+		int tries = 0;
+		while (rolledTrinkets.size() < WndTrinket.NUM_TRINKETS){
+			Trinket t = (Trinket) Generator.random(Generator.Category.TRINKET);
+			boolean excluded = false;
+			for (Trinket r : rolledTrinkets){
+				if (r.getClass() == t.getClass()) excluded = true;
+			}
+			for (Class<?> cls : seenTrinketClasses){
+				if (cls == t.getClass()) excluded = true;
+			}
+			if (!excluded || tries++ > 100){
+				rolledTrinkets.add(t);
+				if (!excluded){
+					seenTrinketClasses.add(t.getClass());
+				}
+			}
+		}
+	}
+
 	private static final String ROLLED_TRINKETS = "rolled_trinkets";
+	private static final String SEEN_TRINKET_CLASSES = "seen_trinket_classes";
 
 	@Override
 	public void storeInBundle(Bundle bundle) {
 		super.storeInBundle(bundle);
 		if (!rolledTrinkets.isEmpty()){
 			bundle.put(ROLLED_TRINKETS, rolledTrinkets);
+		}
+		if (!seenTrinketClasses.isEmpty()){
+			bundle.put(SEEN_TRINKET_CLASSES, seenTrinketClasses.toArray(new Class[0]));
 		}
 	}
 
@@ -104,6 +135,12 @@ public class TrinketCatalyst extends Item {
 		rolledTrinkets.clear();
 		if (bundle.contains(ROLLED_TRINKETS)){
 			rolledTrinkets.addAll((Collection<Trinket>) ((Collection<?>)bundle.getCollection( ROLLED_TRINKETS )));
+		}
+		seenTrinketClasses.clear();
+		if (bundle.contains(SEEN_TRINKET_CLASSES)){
+			for (Class<?> cls : bundle.getClassArray(SEEN_TRINKET_CLASSES)){
+				seenTrinketClasses.add(cls);
+			}
 		}
 	}
 
@@ -168,15 +205,31 @@ public class TrinketCatalyst extends Item {
 			titlebar.setRect(0, 0, WIDTH, 0);
 			add( titlebar );
 
+			//mod: fate rewrite imprint, one reroll per charge
+			if (ModHooks.rerollAvailable()){
+				IconButton btnReroll = new IconButton( Icons.get(Icons.SHUFFLE) ){
+					@Override
+					protected void onClick() {
+						super.onClick();
+						if (ModHooks.useReroll()){
+							cata.rolledTrinkets.clear();
+							cata.rollTrinkets();
+							WndTrinket.this.hide();
+							ShatteredPixelDungeon.scene().addToFront( new WndTrinket(cata) );
+						}
+					}
+				};
+				btnReroll.setRect( WIDTH - 16, 0, 16, 16 );
+				add( btnReroll );
+			}
+
 			RenderedTextBlock message = PixelScene.renderTextBlock( Messages.get(TrinketCatalyst.class, "window_text"), 6 );
 			message.maxWidth(WIDTH);
 			message.setPos(0, titlebar.bottom() + GAP);
 			add( message );
 
 			//roll new trinkets if trinkets were not already rolled
-			while (cata.rolledTrinkets.size() < NUM_TRINKETS){
-				cata.rolledTrinkets.add((Trinket) Generator.random(Generator.Category.TRINKET));
-			}
+			cata.rollTrinkets();
 
 			for (int i = 0; i < NUM_TRINKETS; i++){
 				ItemButton btnReward = new ItemButton() {
