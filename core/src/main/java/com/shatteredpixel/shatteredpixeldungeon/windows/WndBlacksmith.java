@@ -24,6 +24,7 @@ package com.shatteredpixel.shatteredpixeldungeon.windows;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Belongings;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
@@ -42,6 +43,8 @@ import com.shatteredpixel.shatteredpixeldungeon.journal.Notes;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
+import com.shatteredpixel.shatteredpixeldungeon.ui.IconButton;
+import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
 import com.shatteredpixel.shatteredpixeldungeon.ui.ItemButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RedButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
@@ -460,6 +463,23 @@ public class WndBlacksmith extends Window {
 
 		public WndSmith( Blacksmith troll, Hero hero ){
 			super();
+
+			//mod: fate rewrite imprint, one reroll per charge
+			if (ModHooks.rerollAvailable()){
+				IconButton btnReroll = new IconButton( Icons.get(Icons.SHUFFLE) ){
+					@Override
+					protected void onClick() {
+						super.onClick();
+						if (ModHooks.useReroll()){
+							Blacksmith.Quest.rerollRewards();
+							WndSmith.this.hide();
+							GameScene.show( new WndSmith( troll, hero ) );
+						}
+					}
+				};
+				btnReroll.setRect( WIDTH - 16, 0, 16, 16 );
+				add( btnReroll );
+			}
 
 			IconTitle titlebar = new IconTitle();
 			titlebar.icon(troll.sprite());

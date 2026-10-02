@@ -412,6 +412,14 @@ public class Blacksmith extends NPC {
 
 		}
 
+		public static void rerollRewards(){
+			//mod: fate rewrite imprint, one reroll per charge
+			//reuses the standard generation logic as-is
+			if (smithRewards != null && !smithRewards.isEmpty()){
+				generateRewards( false );
+			}
+		}
+
 		public static int Type(){
 			return type;
 		}
