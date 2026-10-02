@@ -23,6 +23,7 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.MetaProgress;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -247,7 +248,7 @@ public class Shopkeeper extends NPC {
 			@Override
 			public void call() {
 				//mod: soul crystal shop imprint, adds a shard gamble option
-				final boolean gambleAvailable = !Dungeon.daily
+				final boolean gambleAvailable = ModHooks.imprintsActive()
 						&& MetaProgress.Imprint.GAMBLE.level() >= 1;
 				final int buybackOffset = gambleAvailable ? 3 : 2;
 				String[] options = new String[buybackOffset + buybackItems.size()];

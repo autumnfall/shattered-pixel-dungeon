@@ -32,6 +32,7 @@ public class MetaProgress {
 
 	private static final String SOUL_SHARDS	= "soul_shards";
 	private static final String WELCOMED		= "welcomed";
+	private static final String CHALLENGES_ENABLED	= "challenges_enabled";
 
 	private static final String RUN_SNAPSHOT	= "imprint_snapshot";
 
@@ -49,6 +50,9 @@ public class MetaProgress {
 	private static boolean freshInstall = false;
 
 	private static boolean welcomed = false;
+
+	//mod: whether imprint effects apply in regular challenge runs (daily always excluded)
+	private static boolean challengesEnabled = false;
 
 	public enum Imprint {
 		SUPPLIES   ("imprint_supplies",	1, new int[]{15, 35, 65}),
@@ -123,6 +127,7 @@ public class MetaProgress {
 				Bundle bundle = FileUtils.bundleFromFile( META_FILE );
 				soulShards = bundle.getInt( SOUL_SHARDS );
 				welcomed = bundle.getBoolean( WELCOMED );
+				challengesEnabled = bundle.getBoolean( CHALLENGES_ENABLED );
 				for (Imprint im : Imprint.values()){
 					imprintLevels[im.ordinal()] = bundle.getInt( im.key );
 				}
@@ -162,6 +167,7 @@ public class MetaProgress {
 			Bundle bundle = new Bundle();
 			bundle.put( SOUL_SHARDS, soulShards );
 			bundle.put( WELCOMED, welcomed );
+			bundle.put( CHALLENGES_ENABLED, challengesEnabled );
 			for (Imprint im : Imprint.values()){
 				bundle.put( im.key, imprintLevels[im.ordinal()] );
 			}
@@ -214,6 +220,19 @@ public class MetaProgress {
 		loadGlobal();
 		welcomed = true;
 		saveGlobal(true);
+	}
+
+	public static boolean challengesEnabled(){
+		loadGlobal();
+		return challengesEnabled;
+	}
+
+	public static void challengesEnabled( boolean value ){
+		loadGlobal();
+		if (challengesEnabled != value){
+			challengesEnabled = value;
+			saveGlobal(true);
+		}
 	}
 
 	public static void earnShards( int amount ){

@@ -50,6 +50,7 @@ public class WndMeta extends Window {
 	private final ArrayList<ImprintButton> buttons	= new ArrayList<>();
 
 	private StyledButton btnReset;
+	private CheckBox chkChallenges;
 
 	private int shownShards = -1;
 	private int shownTotal = -1;
@@ -68,8 +69,19 @@ public class WndMeta extends Window {
 		add( shards );
 
 		note = PixelScene.renderTextBlock( Messages.get(this, "note"), 5 );
+		note.maxWidth( width );
 		note.hardlight( 0x888888 );
 		add( note );
+
+		chkChallenges = new CheckBox( Messages.get(this, "challenges") ){
+			@Override
+			protected void onClick() {
+				super.onClick();
+				MetaProgress.challengesEnabled( checked() );
+			}
+		};
+		chkChallenges.checked( MetaProgress.challengesEnabled() );
+		add( chkChallenges );
 
 		for (int i = 0; i < 4; i++){
 			tierTitles[i] = PixelScene.renderTextBlock( 6 );
@@ -139,7 +151,8 @@ public class WndMeta extends Window {
 
 		shards.setPos( 0, pos );
 		note.setPos( 0, shards.bottom() + 1 );
-		pos = note.bottom() + 3;
+		chkChallenges.setRect( 0, note.bottom() + 2, width, 16 );
+		pos = chkChallenges.bottom() + 4;
 
 		for (int tier = 1; tier <= 4; tier++){
 			tierTitles[tier-1].maxWidth( width );
@@ -170,8 +183,8 @@ public class WndMeta extends Window {
 
 			seps[tier-1].size( width, 1 );
 			seps[tier-1].x = 0;
-			seps[tier-1].y = pos + 1;
-			pos += 4;
+			seps[tier-1].y = pos + 3;
+			pos += 8;
 		}
 
 		btnReset.setRect( 0, pos, width, 16 );
