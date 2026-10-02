@@ -25,6 +25,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Chrome;
 import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
+import com.shatteredpixel.shatteredpixeldungeon.journal.Catalog;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Languages;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
@@ -369,6 +370,8 @@ public class WndSettings extends WndTabbed {
 		CheckBox chkFont;
 		CheckBox chkVibrate;
 		CheckBox chkMobHP;
+		ColorBlock sep3;
+		RedButton btnUnlockCatalog;
 
 		@Override
 		protected void createChildren() {
@@ -612,6 +615,31 @@ public class WndSettings extends WndTabbed {
 			};
 			chkMobHP.checked(SPDSettings.showMobHP());
 			add(chkMobHP);
+
+			sep3 = new ColorBlock(1, 1, 0xFF000000);
+			add(sep3);
+
+			btnUnlockCatalog = new RedButton(Messages.get(this, "unlock_catalog"), 9){
+				@Override
+				protected void onClick() {
+					super.onClick();
+					ShatteredPixelDungeon.scene().addToFront(new WndOptions(
+							Messages.get(WndSettings.UITab.this, "unlock_catalog_title"),
+							Messages.get(WndSettings.UITab.this, "unlock_catalog_warn"),
+							Messages.get(WndSettings.UITab.this, "unlock_catalog_yes"),
+							Messages.get(WndSettings.UITab.this, "unlock_catalog_no")){
+						@Override
+						protected void onSelect(int index) {
+							if (index == 0){
+								Catalog.unlockAll();
+								ShatteredPixelDungeon.scene().addToFront(new WndMessage(
+										Messages.get(WndSettings.UITab.this, "unlock_catalog_done")));
+							}
+						}
+					});
+				}
+			};
+			add(btnUnlockCatalog);
 		}
 
 		@Override
@@ -661,6 +689,12 @@ public class WndSettings extends WndTabbed {
 				chkMobHP.setRect(0, chkVibrate.bottom() + GAP, width, BTN_HEIGHT);
 				height = chkMobHP.bottom();
 			}
+
+			sep3.size(width, 1);
+			sep3.y = height + GAP;
+
+			btnUnlockCatalog.setRect(0, sep3.y + 1 + GAP, width, BTN_HEIGHT);
+			height = btnUnlockCatalog.bottom();
 		}
 
 	}
