@@ -315,6 +315,17 @@ public enum Catalog {
 		Badges.validateCatalogBadges();
 	}
 
+	//mod: unlock every catalog entry at once (settings shortcut)
+	public static void unlockAll(){
+		for (Catalog cat : values()) {
+			for (Class<?> item : cat.items()) {
+				cat.seen.put(item, true);
+			}
+		}
+		Journal.saveNeeded = true;
+		Badges.validateCatalogBadges();
+	}
+
 	public static int useCount(Class<?> cls){
 		for (Catalog cat : values()) {
 			if (cat.useCount.containsKey(cls)) {
