@@ -129,6 +129,7 @@ public class SPDSettings extends GameSettings {
 	public static final String KEY_SLOTWATERSKIN= "quickslot_waterskin";
 	public static final String KEY_SYSTEMFONT	= "system_font";
 	public static final String KEY_VIBRATION    = "vibration";
+	public static final String KEY_MOBHP	    = "show_mob_hp";
 
 	public static final String KEY_GAMES_SORT    = "games_sort";
 
@@ -206,6 +207,14 @@ public class SPDSettings extends GameSettings {
 
 	public static boolean vibration(){
 		return getBoolean(KEY_VIBRATION, true);
+	}
+
+	public static void showMobHP(boolean value){
+		put(KEY_MOBHP, value);
+	}
+
+	public static boolean showMobHP(){
+		return getBoolean(KEY_MOBHP, true);
 	}
 
 	public static String gamesInProgressSort(){
