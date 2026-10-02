@@ -21,6 +21,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.windows;
 
+import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
@@ -46,6 +47,7 @@ public class WndInfoMob extends WndTitledMessage {
 		private CharSprite image;
 		private RenderedTextBlock name;
 		private HealthBar health;
+		private RenderedTextBlock hpText;
 		private BuffIndicator buffs;
 		
 		public MobTitle( Mob mob ) {
@@ -60,6 +62,12 @@ public class WndInfoMob extends WndTitledMessage {
 			health = new HealthBar();
 			health.level(mob);
 			if (!Char.hasProp(mob, Char.Property.OBJECT)) add( health );
+
+			if (SPDSettings.showMobHP() && !Char.hasProp(mob, Char.Property.OBJECT)) {
+				hpText = PixelScene.renderTextBlock( mob.HP + " / " + mob.HT, 6 );
+				hpText.hardlight( 0xFFFFFF );
+				add( hpText );
+			}
 
 			buffs = new BuffIndicator( mob, false );
 			if (!Char.hasProp(mob, Char.Property.OBJECT)) add( buffs );
@@ -77,6 +85,11 @@ public class WndInfoMob extends WndTitledMessage {
 					image.height() > name.height() ? y +(image.height() - name.height()) / 2 : y);
 
 			health.setRect(image.width() + GAP, name.bottom() + GAP, w, health.height());
+
+			if (hpText != null) {
+				hpText.setPos(health.left() + (health.width() - hpText.width()) / 2,
+						health.top() + (health.height() - hpText.height()) / 2);
+			}
 
 			buffs.maxBuffs = 50; //infinite, effectively
 			buffs.setRect(name.right(), name.bottom() - BuffIndicator.SIZE_SMALL-2, w - name.width(), 8);
