@@ -30,6 +30,9 @@ public class Settlement {
 		if (victory){
 			shards += 50;
 		}
+		if (victory && Statistics.ascended){
+			shards += 100;
+		}
 		return shards;
 	}
 
