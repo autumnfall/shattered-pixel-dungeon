@@ -25,6 +25,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
@@ -1028,6 +1029,7 @@ public abstract class Mob extends Char {
 		}
 
 		if (alignment == Alignment.ENEMY){
+			ModHooks.onEnemyKilled( this, cause );
 			if (buff(Trap.HazardAssistTracker.class) != null){
 				Statistics.hazardAssistedKills++;
 				Badges.validateHazardAssists();
@@ -1089,6 +1091,9 @@ public abstract class Mob extends Char {
 		}
 
 		dropBonus += ShardOfOblivion.lootChanceMultiplier()-1f;
+
+		//mod: 幸运眷顾 faction grants +20% drop luck
+		dropBonus += ModHooks.caravanLuckBonus();
 
 		return lootChance * dropBonus;
 	}

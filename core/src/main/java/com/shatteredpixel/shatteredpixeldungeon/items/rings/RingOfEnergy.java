@@ -22,6 +22,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.items.rings;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
@@ -64,6 +65,9 @@ public class RingOfEnergy extends Ring {
 	public static float wandChargeMultiplier( Char target ){
 		float bonus = (float)Math.pow(1.175, getBuffedBonus(target, Energy.class));
 
+		//mod: 奥术共鸣 faction grants one energy-ring level of charge speed
+		bonus *= ModHooks.orderChargeMult();
+
 		if (target instanceof Hero && ((Hero) target).heroClass != HeroClass.CLERIC && ((Hero) target).hasTalent(Talent.LIGHT_READING)){
 			bonus *= 1f + (0.2f * ((Hero) target).pointsInTalent(Talent.LIGHT_READING)/3f);
 		}
@@ -73,6 +77,9 @@ public class RingOfEnergy extends Ring {
 
 	public static float artifactChargeMultiplier( Char target ){
 		float bonus = (float)Math.pow(1.175, getBuffedBonus(target, Energy.class));
+
+		//mod: 奥术共鸣 faction grants one energy-ring level of charge speed
+		bonus *= ModHooks.orderChargeMult();
 
 		if (target instanceof Hero && ((Hero) target).heroClass != HeroClass.ROGUE && ((Hero) target).hasTalent(Talent.LIGHT_CLOAK)){
 			bonus *= 1f + (0.2f * ((Hero) target).pointsInTalent(Talent.LIGHT_CLOAK)/3f);

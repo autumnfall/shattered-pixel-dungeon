@@ -24,6 +24,9 @@ package com.shatteredpixel.shatteredpixeldungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.CounterBuff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Hunger;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invulnerability;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vulnerable;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.DM300;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.DwarfKing;
@@ -31,19 +34,31 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Goo;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Tengu;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.SmallRation;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.Potion;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing;
+import com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring;
+import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfForce;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfIdentify;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.darts.Dart;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.ui.WndReward;
+import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.watabou.noosa.Game;
 import com.watabou.noosa.Image;
 import com.watabou.utils.Callback;
+import com.watabou.utils.Random;
+
+import java.util.ArrayList;
 
 public class ModHooks {
 
@@ -79,6 +94,68 @@ public class ModHooks {
 			Generator.random( Generator.Category.SEED ).collect();
 		}
 		Statistics.rerollCharges = MetaProgress.Imprint.REROLL.level();
+		//mod: divine ward tracker attaches at run start so remaining uses are visible immediately
+		if (MetaProgress.Imprint.DIVINE_WARD.runLevel() > 0){
+			Buff.affect( hero, DivineWardTracker.class );
+		}
+		initFaction( hero );
+	}
+
+	//mod: faction chosen on the hero select screen is locked in for this run
+	private static void initFaction( Hero hero ){
+		if (Dungeon.daily) return;
+		Factions.Faction faction = Factions.Faction.values()[SPDSettings.faction()];
+		Factions.init( hero, faction );
+		if (faction == Factions.Faction.ORDER){
+			//starting knowledge counts toward 学识
+			for (Item item : hero.belongings){
+				if (item.isIdentified()
+						&& (item instanceof Potion || item instanceof Scroll || item instanceof Ring
+						|| item instanceof Weapon || item instanceof Armor)){
+					Factions.earn( 1 );
+				}
+			}
+		}
+	}
+
+	//mod: faction contribution + on-kill effects, called for every enemy death
+	public static void onEnemyKilled( Mob mob, Object cause ){
+		boolean heroKill = cause == Dungeon.hero || cause instanceof Weapon || cause instanceof Weapon.Enchantment;
+		if (!heroKill) return;
+		Factions.Faction faction = Factions.active();
+		if (faction == Factions.Faction.WARBAND){
+			boolean boss = mob.properties().contains( Char.Property.BOSS );
+			Factions.earn( boss ? 10 : 1 );
+			//战意: heal 1 HP per kill at tier 2+
+			if (Factions.tier() >= 2 && Dungeon.hero.HP < Dungeon.hero.HT){
+				Dungeon.hero.HP++;
+			}
+		} else if (faction == Factions.Faction.ORDER && mob.properties().contains( Char.Property.BOSS )){
+			//战后总结: identify 2 unidentified items per boss, max 8
+			Factions.FactionTracker t = Factions.tracker();
+			if (Factions.tier() >= 1 && t.bossIdentified < 8){
+				ArrayList<Item> candidates = new ArrayList<>();
+				for (Item item : Dungeon.hero.belongings){
+					if (!item.isIdentified() && (item instanceof Potion || item instanceof Scroll || item instanceof Ring)){
+						candidates.add( item );
+					}
+				}
+				Random.shuffle( candidates );
+				for (int i = 0; i < 2 && i < candidates.size() && t.bossIdentified < 8; i++){
+					candidates.get( i ).identify();
+					t.bossIdentified++;
+				}
+			}
+		}
+	}
+
+	//mod: 学识 contribution, called whenever the hero identifies an item
+	public static void onItemIdentified( Item item ){
+		if (Factions.active() != Factions.Faction.ORDER) return;
+		if (item instanceof Potion || item instanceof Scroll || item instanceof Ring
+				|| item instanceof Weapon || item instanceof Armor){
+			Factions.earn( 1 );
+		}
 	}
 
 	//mod: fate rewrite imprint, consumes one reroll charge if available
@@ -124,6 +201,9 @@ public class ModHooks {
 	}
 
 	public static int modifyGoldPickup( int quantity ){
+		if (Factions.active() == Factions.Faction.CARAVAN){
+			Factions.earn( quantity );
+		}
 		if (!imprintsActive()){
 			return quantity;
 		}
@@ -164,12 +244,13 @@ public class ModHooks {
 
 		@Override
 		public int icon() {
-			return BuffIndicator.ANKH;
+			//ENDURE is unused by vanilla buffs; blue tint distinguishes it further
+			return BuffIndicator.ENDURE;
 		}
 
 		@Override
 		public void tintIcon( Image icon ) {
-			//blue tint to distinguish from ankh blessings
+			//blue tint, no vanilla collision for this icon
 			icon.hardlight( 0.6f, 0.8f, 1f );
 		}
 
@@ -232,4 +313,113 @@ public class ModHooks {
 		return 1f + 0.05f*lightGear;
 	}
 
+
+// === faction effect helpers ===
+
+	//true if the damage source belongs to the hero: melee, thrown weapons, weapon
+	//enchantments, and wands all report themselves as the damage source
+	public static boolean isHeroDamageSource( Object src ){
+		return src == Dungeon.hero
+				|| src instanceof KindOfWeapon
+				|| src instanceof Weapon.Enchantment
+				|| src instanceof Wand;
+	}
+
+	//central damage hook for faction damage bonuses: 处决/屠龙术/商业帝国
+	public static int modifyDealtDamage( Char target, Object src, int dmg ){
+		if (!(target instanceof Mob) || Dungeon.hero == null) return dmg;
+		if (!isHeroDamageSource( src )) return dmg;
+		Factions.Faction faction = Factions.active();
+		int tier = Factions.tier();
+		if (faction == Factions.Faction.WARBAND){
+			//处决: +25% vs enemies below 15% HP
+			if (tier >= 1 && target.HP < target.HT * 0.15f){
+				dmg = Math.round( dmg * 1.25f );
+			}
+			//屠龙术: +5% vs bosses, +1% per 10 战功 beyond 100, capped at +20%
+			if (tier >= 5 && target.properties().contains( Char.Property.BOSS )){
+				dmg = Math.round( dmg * (1f + Math.min( 0.20f, 0.05f + 0.01f * ((Factions.contribution() - 100) / 10f) )) );
+			}
+			//弱点打击: 20% chance to make the target vulnerable for 2 turns
+			if (tier >= 3 && ((Mob) target).buff( Vulnerable.class ) == null && Random.Float() < 0.2f){
+				Buff.affect( target, Vulnerable.class, 2f );
+			}
+		} else if (faction == Factions.Faction.CARAVAN && tier >= 5){
+			//商业帝国: +1% damage per 400 gold held, cap grows with contribution
+			float cap = Math.min( 0.25f, 0.10f + 0.03f * ((Factions.contribution() - 8000) / 2000f) );
+			dmg = Math.round( dmg * (1f + Math.min( cap, 0.01f * (Dungeon.gold / 400) )) );
+		}
+		return dmg;
+	}
+
+	//武力: warband tier 4 emulates a +0 ring of force while truly unarmed
+	public static int warbandUnarmedDamage( Hero hero, int baseDmg ){
+		if (Factions.active() == Factions.Faction.WARBAND && Factions.tier() >= 4
+				&& hero.buff( RingOfForce.Force.class ) == null){
+			//same roll as a +0 ring of force (tier is forced to 1 at level 0): 1-10
+			return Math.max( baseDmg, Hero.heroDamageIntRange( 1, 10 ) );
+		}
+		return baseDmg;
+	}
+
+	//商会底牌: revive by spending half of current gold, once per run
+	public static boolean caravanRevive( Hero hero ){
+		if (Factions.active() != Factions.Faction.CARAVAN || Factions.tier() < 3) return false;
+		Factions.FactionTracker t = Factions.tracker();
+		if (t.revivesUsed >= 1 || Dungeon.gold <= 0) return false;
+		t.revivesUsed++;
+		Dungeon.gold /= 2;
+		hero.HP = hero.HT / 4;
+		PotionOfHealing.cure( hero );
+		Buff.prolong( hero, Invulnerability.class, Invulnerability.DURATION );
+		GLog.w( Messages.get( ModHooks.class, "caravan_revive" ) );
+		return true;
+	}
+
+	//幸运眷顾: +20% drop luck, equivalent to one level of wealth bonus
+	public static float caravanLuckBonus(){
+		if (Factions.active() == Factions.Faction.CARAVAN && Factions.tier() >= 4) return 0.2f;
+		return 0f;
+	}
+
+	//砍价: shop buy price multiplier
+	public static float caravanBuyPriceMult(){
+		if (Factions.active() == Factions.Faction.CARAVAN && Factions.tier() >= 1) return 0.88f;
+		return 1f;
+	}
+
+	//贵宾货架: extra rare equipment in every shop
+	public static boolean caravanRareItem(){
+		return Factions.active() == Factions.Faction.CARAVAN && Factions.tier() >= 2;
+	}
+
+	//悉心保管: scrolls immune to burning, potions immune to freezing
+	public static boolean orderProtectsScrolls(){
+		return Factions.active() == Factions.Faction.ORDER && Factions.tier() >= 2;
+	}
+
+	public static boolean orderProtectsPotions(){
+		return Factions.active() == Factions.Faction.ORDER && Factions.tier() >= 2;
+	}
+
+	//精神食粮: hunger restored per scroll read
+	public static float orderScrollFoodEnergy(){
+		if (Factions.active() == Factions.Faction.ORDER && Factions.tier() >= 3) return Hunger.HUNGRY / 20f;
+		return 0f;
+	}
+
+	//奥术共鸣: charge speed of one energy ring level (x1.175)
+	public static float orderChargeMult(){
+		if (Factions.active() == Factions.Faction.ORDER && Factions.tier() >= 4) return 1.175f;
+		return 1f;
+	}
+
+	//明察秋毫: search range bonus levels (0-5), each odd level extends
+	//orthogonally first, the following even level completes the ring diagonally
+	public static int orderSearchBonus(){
+		if (Factions.active() == Factions.Faction.ORDER && Factions.tier() >= 5){
+			return 1 + (int)Math.min( 4, (Factions.contribution() - 32) / 8 );
+		}
+		return 0;
+	}
 }

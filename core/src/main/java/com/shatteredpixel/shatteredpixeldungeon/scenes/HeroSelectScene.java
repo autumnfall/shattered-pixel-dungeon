@@ -29,6 +29,7 @@ import com.shatteredpixel.shatteredpixeldungeon.GamesInProgress;
 import com.shatteredpixel.shatteredpixeldungeon.MetaProgress;
 import com.shatteredpixel.shatteredpixeldungeon.Rankings;
 import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
+import com.shatteredpixel.shatteredpixeldungeon.Factions;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Journal;
@@ -840,6 +841,48 @@ public class HeroSelectScene extends PixelScene {
 			challengeButton.icon(Icons.get(SPDSettings.challenges() > 0 ? Icons.CHALLENGE_COLOR : Icons.CHALLENGE_GREY));
 			add(challengeButton);
 			buttons.add(challengeButton);
+
+			//mod: faction selection, locked in for the next run
+			StyledButton factionButton = new StyledButton(Chrome.Type.BLANK, Messages.get(Factions.class, "select"), 6){
+				@Override
+				protected void onClick() {
+					String[] options = new String[]{
+							Messages.get( Factions.class, "none" ),
+							Factions.Faction.WARBAND.title(),
+							Factions.Faction.CARAVAN.title(),
+							Factions.Faction.ORDER.title()
+					};
+					ShatteredPixelDungeon.scene().addToFront( new WndOptions(
+							Icons.get( Icons.SCROLL_HOLDER ),
+							Messages.get( Factions.class, "select" ),
+							Messages.get( Factions.class, "select_desc" ),
+							options ){
+						@Override
+						protected void onSelect( int index ) {
+							SPDSettings.faction( index );
+							icon( Icons.get( index == 0 ? Icons.SCROLL_HOLDER : Icons.SCROLL_COLOR ) );
+						}
+
+						@Override
+						protected boolean hasInfo( int index ) {
+							return index > 0;
+						}
+
+						@Override
+						protected void onInfo( int index ) {
+							ShatteredPixelDungeon.scene().addToFront( new WndTitledMessage(
+									Icons.get( Icons.SCROLL_HOLDER ),
+									Factions.Faction.values()[index].title(),
+									Factions.Faction.values()[index].desc()
+							) );
+						}
+					} );
+				}
+			};
+			factionButton.leftJustify = true;
+			factionButton.icon(Icons.get(SPDSettings.faction() > 0 ? Icons.SCROLL_COLOR : Icons.SCROLL_HOLDER));
+			add(factionButton);
+			buttons.add(factionButton);
 
 			int unlockedCount = 0;
 			for (HeroClass cls : HeroClass.values()){

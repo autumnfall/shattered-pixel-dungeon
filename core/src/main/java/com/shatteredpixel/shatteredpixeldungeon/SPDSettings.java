@@ -229,6 +229,7 @@ public class SPDSettings extends GameSettings {
 	
 	public static final String KEY_LAST_CLASS	= "last_class";
 	public static final String KEY_CHALLENGES	= "challenges";
+	public static final String KEY_FACTION		= "faction";
 	public static final String KEY_CUSTOM_SEED	= "custom_seed";
 	public static final String KEY_LAST_DAILY	= "last_daily";
 	public static final String KEY_INTRO		= "intro";
@@ -259,6 +260,14 @@ public class SPDSettings extends GameSettings {
 	
 	public static int challenges() {
 		return getInt( KEY_CHALLENGES, 0, 0, Challenges.MAX_VALUE );
+	}
+
+	public static void faction( int value ) {
+		put( KEY_FACTION, value );
+	}
+
+	public static int faction() {
+		return getInt( KEY_FACTION, 0, 0, 3 );
 	}
 
 	public static void customSeed( String value ){

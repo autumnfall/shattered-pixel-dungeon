@@ -23,6 +23,7 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Blob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Fire;
@@ -127,6 +128,8 @@ public class Burning extends Buff implements Hero.Doom, Buff.DOTbuff {
 					if (!hero.belongings.lostInventory()) {
 						for (Item i : hero.belongings.backpack.items) {
 							if (!i.unique && (i instanceof Scroll || i instanceof MysteryMeat || i instanceof FrozenCarpaccio)) {
+								//mod: 悉心保管 faction makes scrolls immune to burning
+								if (i instanceof Scroll && ModHooks.orderProtectsScrolls()) continue;
 								burnable.add(i);
 							}
 						}
