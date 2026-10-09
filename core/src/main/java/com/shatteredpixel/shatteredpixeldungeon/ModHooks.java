@@ -39,8 +39,10 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.darts.Dart
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
+import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.ui.WndReward;
 import com.watabou.noosa.Game;
+import com.watabou.noosa.Image;
 import com.watabou.utils.Callback;
 
 public class ModHooks {
@@ -154,7 +156,28 @@ public class ModHooks {
 	}
 
 	//mod: divine ward imprint, per-run counter of wraith-free tomb/remains openings
-	public static class DivineWardTracker extends CounterBuff {}
+	public static class DivineWardTracker extends CounterBuff {
+
+		{
+			type = buffType.POSITIVE;
+		}
+
+		@Override
+		public int icon() {
+			return BuffIndicator.ANKH;
+		}
+
+		@Override
+		public void tintIcon( Image icon ) {
+			//blue tint to distinguish from ankh blessings
+			icon.hardlight( 0.6f, 0.8f, 1f );
+		}
+
+		@Override
+		public String desc() {
+			return Messages.get( this, "desc", MetaProgress.Imprint.DIVINE_WARD.runLevel() - (int)count() );
+		}
+	}
 
 	public static boolean suppressWraiths( Hero hero ){
 		if (!imprintsActive()) return false;
@@ -165,6 +188,7 @@ public class ModHooks {
 			tracker.countUp( 1 );
 			return true;
 		}
+		tracker.detach();
 		return false;
 	}
 
