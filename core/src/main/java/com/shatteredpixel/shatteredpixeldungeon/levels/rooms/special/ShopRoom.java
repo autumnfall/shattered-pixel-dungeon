@@ -22,6 +22,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.levels.rooms.special;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.MetaProgress;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Belongings;
@@ -307,6 +308,21 @@ public class ShopRoom extends SpecialRoom {
 
 		itemsToSpawn.add( new Ankh() );
 		itemsToSpawn.add( new StoneOfAugmentation() );
+
+		//mod: 贵宾货架 faction adds a guaranteed rare equipment to every shop
+		if (ModHooks.caravanRareItem()){
+			switch (Random.Int(3)){
+				case 0: default:
+					itemsToSpawn.add( Generator.randomUsingDefaults( Generator.Category.RING ) );
+					break;
+				case 1:
+					itemsToSpawn.add( Generator.randomUsingDefaults( Generator.Category.ARTIFACT ) );
+					break;
+				case 2:
+					itemsToSpawn.add( Generator.randomUsingDefaults( Generator.Category.WAND ) );
+					break;
+			}
+		}
 
 		TimekeepersHourglass hourglass = Dungeon.hero.belongings.getItem(TimekeepersHourglass.class);
 		if (hourglass != null && hourglass.isIdentified() && !hourglass.cursed){

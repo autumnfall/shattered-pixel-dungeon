@@ -22,6 +22,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Thief;
@@ -66,6 +67,8 @@ public class Frost extends FlavourBuff {
 				if (!hero.belongings.lostInventory()) {
 					for (Item i : hero.belongings.backpack.items) {
 						if (!i.unique && (i instanceof Potion || i instanceof MysteryMeat)) {
+							//mod: 悉心保管 faction makes potions immune to freezing
+							if (i instanceof Potion && ModHooks.orderProtectsPotions()) continue;
 							freezable.add(i);
 						}
 					}

@@ -25,6 +25,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
@@ -77,7 +78,6 @@ import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAggression;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ExoticCrystals;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ShardOfOblivion;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfBlastWave;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.enchantments.Lucky;
@@ -93,8 +93,10 @@ import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.plants.Swiftthistle;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
+import com.shatteredpixel.shatteredpixeldungeon.tiles.DungeonTilemap;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.watabou.noosa.audio.Sample;
+import com.watabou.noosa.tweeners.AlphaTweener;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.GameMath;
 import com.watabou.utils.PathFinder;
@@ -725,19 +727,55 @@ public abstract class Mob extends Char {
 		}
 	}
 
+	CharSprite movementShadow;
+	AlphaTweener shadowFade;
+
 	@Override
 	public void move(int step, boolean travelling) {
+		int from = pos;
 		super.move(step, travelling);
 		if (usingStealthGamePlay
 				&& travelling
+				&& sprite != null
 				&& !sprite.visible
 				&& Dungeon.level.distance(pos, Dungeon.hero.pos) <= 6){
-			if (state == HUNTING){
-				WandOfBlastWave.BlastWave.blast(pos, 1f, 0xFF0000);
-			} else if (state == INVESTIGATING){
-				WandOfBlastWave.BlastWave.blast(pos, 1f, 0xFF8800);
+			if (!Dungeon.level.visited[pos] && !Dungeon.level.mapped[pos]){
+				//also reveal this cell in the fog of war if it's within a 6 tile path
+				PathFinder.buildDistanceMap(Dungeon.hero.pos, Dungeon.level.passable, 6);
+				if (PathFinder.distance[pos] != Integer.MAX_VALUE) {
+					Dungeon.level.visited[pos] = true;
+					GameScene.updateFog(pos, 1);
+				}
+			}
+			//if we don't have a shadow, or it was removed from the scene (e.g. from scene reset)
+			if (movementShadow == null || movementShadow.parent == null){
+				movementShadow = sprite();
+				sprite.parent.add(movementShadow);
+			}
+			movementShadow.point(DungeonTilemap.raisedTileCenterToWorld(from));
+			movementShadow.x -= movementShadow.width()/2f;
+			movementShadow.y -= movementShadow.height()/2f;
+			movementShadow.move(from, pos);
+			movementShadow.alpha(sprite.alpha());
+			if (shadowFade == null){
+				shadowFade = new AlphaTweener( movementShadow, 0, 1 ) {
+					@Override
+					protected void updateValues(float progress) {
+						if (sprite.visible){
+							elapsed = progress = 1;
+						}
+						progress = (float)Math.pow(progress, 2); //alpha fades slowly then quickly
+						super.updateValues(progress);
+					}
+
+					@Override
+					protected void onComplete() {
+						shadowFade = null;
+					}
+				};
+				sprite.parent.add(shadowFade);
 			} else {
-				WandOfBlastWave.BlastWave.blast(pos, 1f);
+				shadowFade.elapsed = 0;
 			}
 		}
 	}
@@ -991,6 +1029,7 @@ public abstract class Mob extends Char {
 		}
 
 		if (alignment == Alignment.ENEMY){
+			ModHooks.onEnemyKilled( this, cause );
 			if (buff(Trap.HazardAssistTracker.class) != null){
 				Statistics.hazardAssistedKills++;
 				Badges.validateHazardAssists();
@@ -1052,6 +1091,9 @@ public abstract class Mob extends Char {
 		}
 
 		dropBonus += ShardOfOblivion.lootChanceMultiplier()-1f;
+
+		//mod: 幸运眷顾 faction grants +20% drop luck
+		dropBonus += ModHooks.caravanLuckBonus();
 
 		return lootChance * dropBonus;
 	}

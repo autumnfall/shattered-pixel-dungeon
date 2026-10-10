@@ -679,6 +679,8 @@ public class Hero extends Char {
 			if (!(wep instanceof MissileWeapon)) dmg += RingOfForce.armedDamageBonus(this);
 		} else {
 			dmg = RingOfForce.damageRoll(this);
+			//mod: 武力 faction emulates a +0 ring of force while unarmed
+			dmg = ModHooks.warbandUnarmedDamage( this, dmg );
 			if (RingOfForce.unarmedGetsWeaponAugment(this)){
 				dmg = ((Weapon)belongings.attackingWeapon()).augment.damageFactor(dmg);
 			}
@@ -697,7 +699,7 @@ public class Hero extends Char {
 		if (heroClass != HeroClass.DUELIST
 				&& hasTalent(Talent.WEAPON_RECHARGING)
 				&& (buff(Recharging.class) != null || buff(ArtifactRecharge.class) != null)){
-			dmg = Math.round(dmg * 1.025f + (.025f*pointsInTalent(Talent.WEAPON_RECHARGING)));
+			dmg = Math.round(dmg * (1.025f + .025f*pointsInTalent(Talent.WEAPON_RECHARGING)));
 		}
 
 		if (dmg < 0) dmg = 0;
@@ -2235,7 +2237,16 @@ public class Hero extends Char {
 			}
 			return;
 		}
-		
+
+		//mod: 商会底牌 faction revive, only when no ankh saved the hero
+		if (ModHooks.caravanRevive( this )){
+			interrupt();
+			SpellSprite.show(this, SpellSprite.ANKH);
+			GameScene.flash(0x80FFFF40);
+			Sample.INSTANCE.play(Assets.Sounds.TELEPORT);
+			return;
+		}
+
 		Actor.fixTime();
 		super.die( cause );
 		reallyDie( cause );
@@ -2519,6 +2530,9 @@ public class Hero extends Char {
 		TalismanOfForesight.Foresight talisman = buff( TalismanOfForesight.Foresight.class );
 		boolean cursed = talisman != null && talisman.isCursed();
 
+		//mod: 明察秋毫 faction widens search range (orthogonals first, diagonals complete the ring)
+		int searchBonus = foresight ? 0 : ModHooks.orderSearchBonus();
+
 		int[] rounding = ShadowCaster.rounding[distance];
 
 		int left, right;
@@ -2539,75 +2553,37 @@ public class Hero extends Char {
 			left = Math.max(0, left);
 			for (curr = left + y * Dungeon.level.width(); curr <= right + y * Dungeon.level.width(); curr++){
 
-				if ((foresight || fieldOfView[curr]) && curr != pos) {
+				if (searchCell( curr, intentional, foresight, foresightScan, cursed, talisman )){
+					smthFound = true;
+				}
+			}
+		}
 
-					if ((foresight && (!Dungeon.level.mapped[curr] || foresightScan))){
-						GameScene.checkedCell(curr, foresightScan ? pos : curr);
-					} else if (intentional) {
-						GameScene.checkedCell(curr, pos);
-					}
-
-					if (foresight){
-						Dungeon.level.mapped[curr] = true;
-					}
-					
-					if (Dungeon.level.secret[curr]){
-						
-						Trap trap = Dungeon.level.traps.get( curr );
-						float chance;
-
-						//searches aided by foresight always succeed, even if trap isn't searchable
-						if (foresight){
-							chance = 1f;
-
-						//otherwise if the trap isn't searchable, searching always fails
-						} else if (trap != null && !trap.canBeSearched){
-							chance = 0f;
-
-						//intentional searches always succeed against regular traps and doors
-						} else if (intentional){
-							chance = 1f;
-						
-						//unintentional searches always fail with a cursed talisman
-						} else if (cursed) {
-							chance = 0f;
-							
-						//unintentional trap detection scales from 40% at floor 0 to 30% at floor 25
-						} else if (Dungeon.level.map[curr] == Terrain.SECRET_TRAP) {
-							chance = 0.4f - (Dungeon.depth / 250f);
-							
-						//unintentional door detection scales from 20% at floor 0 to 0% at floor 20
-						} else {
-							chance = 0.2f - (Dungeon.depth / 100f);
-						}
-
-						//don't want to let the player search though hidden doors in tutorial
-						if (SPDSettings.intro()){
-							chance = 0;
-						}
-						
-						if (Random.Float() < chance) {
-						
-							int oldValue = Dungeon.level.map[curr];
-							
-							GameScene.discoverTile( curr, oldValue );
-							
-							Dungeon.level.discover( curr );
-							
-							ScrollOfMagicMapping.discover( curr );
-							
-							if (fieldOfView[curr]) smthFound = true;
-	
-							if (talisman != null){
-								if (oldValue == Terrain.SECRET_TRAP){
-									talisman.charge(2);
-								} else if (oldValue == Terrain.SECRET_DOOR){
-									talisman.charge(10);
-								}
-							}
-						}
+		//mod: 明察秋毫 extra search area, expands orthogonally on odd levels
+		//and completes each ring diagonally on the following even level
+		if (searchBonus > 0){
+			int rings = (searchBonus+1)/2;
+			for (int dy = -(distance+rings); dy <= distance+rings; dy++){
+				for (int dx = -(distance+rings); dx <= distance+rings; dx++){
+					int cheby = Math.max( Math.abs(dx), Math.abs(dy) );
+					if (cheby <= distance) continue; //already covered by the base search
+					int ring = cheby - distance;
+					boolean fullRing = 2*ring <= searchBonus;
+					boolean orthOnlyRing = 2*ring - 1 == searchBonus && Math.min( Math.abs(dx), Math.abs(dy) ) == 0;
+					if (!fullRing && !orthOnlyRing) continue;
+					int cellX = c.x + dx;
+					int cellY = c.y + dy;
+					if (cellX < 0 || cellY < 0 || cellX >= Dungeon.level.width() || cellY >= Dungeon.level.height()) continue;
+					if (searchCell( cellX + cellY * Dungeon.level.width(), intentional, foresight, foresightScan, cursed, talisman )){
+						smthFound = true;
 					}
 				}
+			}
+
+			//5 turns of mind vision limited to the extended search range
+			if (intentional){
+				MindVision mv = Buff.affect( this, MindVision.class, 5f );
+				mv.distance = distance + rings;
 			}
 		}
 		
@@ -2641,6 +2617,85 @@ public class Hero extends Char {
 		}
 		
 		return smthFound;
+	}
+
+	//mod: per-cell search logic, shared by the base search loop and the 明察秋毫 extended area
+	private boolean searchCell( int curr, boolean intentional, boolean foresight,
+								boolean foresightScan, boolean cursed,
+								TalismanOfForesight.Foresight talisman ){
+
+		if (!(foresight || fieldOfView[curr]) || curr == pos) return false;
+
+		boolean found = false;
+
+		if ((foresight && (!Dungeon.level.mapped[curr] || foresightScan))){
+			GameScene.checkedCell(curr, foresightScan ? pos : curr);
+		} else if (intentional) {
+			GameScene.checkedCell(curr, pos);
+		}
+
+		if (foresight){
+			Dungeon.level.mapped[curr] = true;
+		}
+
+		if (Dungeon.level.secret[curr]){
+
+			Trap trap = Dungeon.level.traps.get( curr );
+			float chance;
+
+			//searches aided by foresight always succeed, even if trap isn't searchable
+			if (foresight){
+				chance = 1f;
+
+			//otherwise if the trap isn't searchable, searching always fails
+			} else if (trap != null && !trap.canBeSearched){
+				chance = 0f;
+
+			//intentional searches always succeed against regular traps and doors
+			} else if (intentional){
+				chance = 1f;
+
+			//unintentional searches always fail with a cursed talisman
+			} else if (cursed) {
+				chance = 0f;
+
+			//unintentional trap detection scales from 40% at floor 0 to 30% at floor 25
+			} else if (Dungeon.level.map[curr] == Terrain.SECRET_TRAP) {
+				chance = 0.4f - (Dungeon.depth / 250f);
+
+			//unintentional door detection scales from 20% at floor 0 to 0% at floor 20
+			} else {
+				chance = 0.2f - (Dungeon.depth / 100f);
+			}
+
+			//don't want to let the player search though hidden doors in tutorial
+			if (SPDSettings.intro()){
+				chance = 0;
+			}
+
+			if (Random.Float() < chance) {
+
+				int oldValue = Dungeon.level.map[curr];
+
+				GameScene.discoverTile( curr, oldValue );
+
+				Dungeon.level.discover( curr );
+
+				ScrollOfMagicMapping.discover( curr );
+
+				if (fieldOfView[curr]) found = true;
+
+				if (talisman != null){
+					if (oldValue == Terrain.SECRET_TRAP){
+						talisman.charge(2);
+					} else if (oldValue == Terrain.SECRET_DOOR){
+						talisman.charge(10);
+					}
+				}
+			}
+		}
+
+		return found;
 	}
 	
 	public void resurrect() {

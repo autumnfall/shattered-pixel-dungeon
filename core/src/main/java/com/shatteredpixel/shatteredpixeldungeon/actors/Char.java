@@ -24,6 +24,7 @@ package com.shatteredpixel.shatteredpixeldungeon.actors;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Electricity;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.StormCloud;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.ToxicGas;
@@ -819,6 +820,10 @@ public abstract class Char extends Actor {
 				cachedIncomingDOT += Math.round(resist(b.getClass()) * ((Buff.DOTbuff) b).totalIncomingDMG());
 			}
 		}
+		for (ChampionEnemy buff : buffs(ChampionEnemy.class)){
+			cachedIncomingDOT = (int) Math.ceil(cachedIncomingDOT * buff.damageTakenFactor());
+		}
+
 		needsIncomingDOTUpdate = false;
 		return cachedIncomingDOT;
 	}
@@ -828,6 +833,9 @@ public abstract class Char extends Actor {
 		if (!isAlive() || dmg < 0) {
 			return;
 		}
+
+		//mod: faction damage bonuses (处决/屠龙术/弱点打击/商业帝国)
+		dmg = ModHooks.modifyDealtDamage( this, src, dmg );
 
 		if(isInvulnerable(src.getClass())){
 			sprite.showStatus(CharSprite.POSITIVE, Messages.get(this, "invulnerable"));
