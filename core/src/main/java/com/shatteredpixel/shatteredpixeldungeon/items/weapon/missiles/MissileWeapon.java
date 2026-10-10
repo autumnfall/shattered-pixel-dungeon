@@ -23,6 +23,7 @@ package com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
@@ -124,7 +125,8 @@ abstract public class MissileWeapon extends Weapon {
 	@Override
 	public int max(int lvl) {
 		return  5 * tier +                      //base
-				tier*lvl;                       //level scaling
+				tier*lvl +                      //level scaling
+				ModHooks.warbandWeaponMaxBonus( this ); //武器掌握
 	}
 	
 	public int STRReq(int lvl){

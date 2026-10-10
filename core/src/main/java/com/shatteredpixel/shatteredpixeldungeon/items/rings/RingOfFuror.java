@@ -22,6 +22,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.items.rings;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.ModHooks;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
@@ -58,7 +59,8 @@ public class RingOfFuror extends Ring {
 	}
 	
 	public static float attackSpeedMultiplier(Char target ){
-		return (float)Math.pow(1.09051, getBuffedBonus(target, Furor.class));
+		return (float)Math.pow(1.09051, getBuffedBonus(target, Furor.class))
+				* ModHooks.warbandAttackSpeedMult( target ); //mod: warband tier 4, +0 furor
 	}
 
 	public class Furor extends RingBuff {
