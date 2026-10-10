@@ -220,7 +220,8 @@ public class WndMeta extends Window {
 			height = HEIGHT;
 
 			bg = new Image( Assets.Interfaces.TALENT_BUTTON );
-			bg.frame( 20*(im.maxLevel()-1), 0, WIDTH, HEIGHT );
+			//atlas only has frames for up to 4 levels, cap so 5-level imprints keep the border
+			bg.frame( 20*Math.min( 3, im.maxLevel()-1 ), 0, WIDTH, HEIGHT );
 			add( bg );
 
 			icon = WndInfoImprint.iconFor( im );
