@@ -255,8 +255,15 @@ public class ModHooks {
 		}
 
 		@Override
+		public String name() {
+			//class-based lookup would produce "modhooks$divinewardtracker" keys; use explicit ones
+			return Messages.get( "modhooks.divinewardtracker.name" );
+		}
+
+		@Override
 		public String desc() {
-			return Messages.get( this, "desc", MetaProgress.Imprint.DIVINE_WARD.runLevel() - (int)count() );
+			return Messages.get( "modhooks.divinewardtracker.desc",
+					MetaProgress.Imprint.DIVINE_WARD.runLevel() - (int)count() );
 		}
 	}
 
