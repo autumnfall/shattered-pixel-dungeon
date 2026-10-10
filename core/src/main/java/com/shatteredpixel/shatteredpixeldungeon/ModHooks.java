@@ -153,7 +153,7 @@ public class ModHooks {
 	public static void onItemIdentified( Item item ){
 		if (Factions.active() != Factions.Faction.ORDER) return;
 		if (item instanceof Potion || item instanceof Scroll || item instanceof Ring
-				|| item instanceof Weapon || item instanceof Armor){
+				|| item instanceof Weapon || item instanceof Armor || item instanceof Wand){
 			Factions.earn( 1 );
 		}
 	}
