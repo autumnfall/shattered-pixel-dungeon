@@ -153,7 +153,7 @@ public class ModHooks {
 	public static void onItemIdentified( Item item ){
 		if (Factions.active() != Factions.Faction.ORDER) return;
 		if (item instanceof Potion || item instanceof Scroll || item instanceof Ring
-				|| item instanceof Weapon || item instanceof Armor){
+				|| item instanceof Weapon || item instanceof Armor || item instanceof Wand){
 			Factions.earn( 1 );
 		}
 	}
@@ -312,12 +312,23 @@ public class ModHooks {
 		return minDr;
 	}
 
+	private static boolean isLightOrEmpty( KindOfWeapon wep ){
+		return wep == null || (wep instanceof Weapon && ((Weapon)wep).STRReq( 0 ) == 10);
+	}
+
+	//+3: +5% movement speed per equipment slot that is empty or holds base-strength-10 gear, max +25%
 	public static float travelLightSpeedMult( Hero hero ){
 		if (!imprintsActive() || MetaProgress.Imprint.TRAVEL_LIGHT.runLevel() < 3) return 1f;
 		int lightGear = 0;
-		if (hero.belongings.weapon() instanceof Weapon && ((Weapon)hero.belongings.weapon()).STRReq( 0 ) == 10) lightGear++;
-		if (hero.belongings.armor() != null && hero.belongings.armor().STRReq( 0 ) == 10) lightGear++;
-		return 1f + 0.05f*lightGear;
+		if (isLightOrEmpty( hero.belongings.weapon() )) lightGear++;
+		if (isLightOrEmpty( hero.belongings.secondWep() )) lightGear++;
+		Armor armor = hero.belongings.armor();
+		if (armor == null || armor.STRReq( 0 ) == 10) lightGear++;
+		//artifact/misc/ring slots have no strength-10 gear; only empty slots count
+		if (hero.belongings.artifact() == null) lightGear++;
+		if (hero.belongings.misc() == null) lightGear++;
+		if (hero.belongings.ring() == null) lightGear++;
+		return 1f + 0.05f*Math.min( 5, lightGear );
 	}
 
 

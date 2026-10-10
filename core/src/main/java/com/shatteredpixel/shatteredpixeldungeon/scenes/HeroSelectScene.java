@@ -843,7 +843,9 @@ public class HeroSelectScene extends PixelScene {
 			buttons.add(challengeButton);
 
 			//mod: faction selection, locked in for the next run
-			StyledButton factionButton = new StyledButton(Chrome.Type.BLANK, Messages.get(Factions.class, "select"), 6){
+			StyledButton factionButton = new StyledButton(Chrome.Type.BLANK,
+					SPDSettings.faction() > 0 ? Factions.Faction.values()[SPDSettings.faction()].title()
+							: Messages.get(Factions.class, "select"), 6){
 				@Override
 				protected void onClick() {
 					String[] options = new String[]{
@@ -853,14 +855,16 @@ public class HeroSelectScene extends PixelScene {
 							Factions.Faction.ORDER.title()
 					};
 					ShatteredPixelDungeon.scene().addToFront( new WndOptions(
-							Icons.get( Icons.SCROLL_HOLDER ),
+							Icons.get( Factions.Faction.values()[SPDSettings.faction()].icon() ),
 							Messages.get( Factions.class, "select" ),
 							Messages.get( Factions.class, "select_desc" ),
 							options ){
 						@Override
 						protected void onSelect( int index ) {
 							SPDSettings.faction( index );
-							icon( Icons.get( index == 0 ? Icons.SCROLL_HOLDER : Icons.SCROLL_COLOR ) );
+							Factions.Faction f = Factions.Faction.values()[index];
+							icon( Icons.get( f.icon() ) );
+							text( index == 0 ? Messages.get(Factions.class, "select") : f.title() );
 						}
 
 						@Override
@@ -870,17 +874,18 @@ public class HeroSelectScene extends PixelScene {
 
 						@Override
 						protected void onInfo( int index ) {
+							Factions.Faction f = Factions.Faction.values()[index];
 							ShatteredPixelDungeon.scene().addToFront( new WndTitledMessage(
-									Icons.get( Icons.SCROLL_HOLDER ),
-									Factions.Faction.values()[index].title(),
-									Factions.Faction.values()[index].desc()
+									Icons.get( f.icon() ),
+									f.title(),
+									f.desc()
 							) );
 						}
 					} );
 				}
 			};
 			factionButton.leftJustify = true;
-			factionButton.icon(Icons.get(SPDSettings.faction() > 0 ? Icons.SCROLL_COLOR : Icons.SCROLL_HOLDER));
+			factionButton.icon(Icons.get(Factions.Faction.values()[SPDSettings.faction()].icon()));
 			add(factionButton);
 			buttons.add(factionButton);
 

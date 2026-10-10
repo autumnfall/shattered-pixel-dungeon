@@ -59,7 +59,7 @@ public class MetaProgress {
 		GOLD       ("imprint_gold",	1, new int[]{15, 35, 65, 105}),
 		SEEDS      ("imprint_seeds",	1, new int[]{15, 35, 65}),
 		DIVINE_WARD("imprint_divine_ward",	1, new int[]{15, 35, 65}),
-		BAG        ("imprint_bag",	2, new int[]{40, 90, 180, 360}),
+		BAG        ("imprint_bag",	2, new int[]{40, 90, 180, 360, 600}),
 		FORTUNE    ("imprint_fortune",	2, new int[]{40, 90, 180}),
 		SHOP       ("imprint_shop",	2, new int[]{40, 90, 180}),
 		SELF_RELIANCE("imprint_self_reliance",	2, new int[]{40, 90}),
