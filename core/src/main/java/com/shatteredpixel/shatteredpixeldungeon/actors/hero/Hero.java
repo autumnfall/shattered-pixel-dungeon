@@ -679,8 +679,6 @@ public class Hero extends Char {
 			if (!(wep instanceof MissileWeapon)) dmg += RingOfForce.armedDamageBonus(this);
 		} else {
 			dmg = RingOfForce.damageRoll(this);
-			//mod: 武力 faction emulates a +0 ring of force while unarmed
-			dmg = ModHooks.warbandUnarmedDamage( this, dmg );
 			if (RingOfForce.unarmedGetsWeaponAugment(this)){
 				dmg = ((Weapon)belongings.attackingWeapon()).augment.damageFactor(dmg);
 			}
@@ -2580,9 +2578,9 @@ public class Hero extends Char {
 				}
 			}
 
-			//5 turns of mind vision limited to the extended search range
+			//mind vision (base 1 turn +1 per growth step) limited to the extended search range
 			if (intentional){
-				MindVision mv = Buff.affect( this, MindVision.class, 5f );
+				MindVision mv = Buff.affect( this, MindVision.class, 1f + ModHooks.orderSearchGrowth() );
 				mv.distance = distance + rings;
 			}
 		}

@@ -147,10 +147,12 @@ public class Factions {
 					faction.title(), (int)contribution, tier, thresholds.length ) );
 			for (int i = 0; i < thresholds.length; i++){
 				sb.append( "\n\n" );
+				String key = faction.name().toLowerCase() + "_effect_" + (i+1);
+				String effectName = Messages.get( Factions.class, key + "_name" );
 				sb.append( tier > i
-						? Messages.get( Factions.class, "effect_unlocked", i+1 )
-						: Messages.get( Factions.class, "effect_locked", i+1, (int)thresholds[i] - (int)contribution ) );
-				sb.append( " " ).append( Messages.get( Factions.class, faction.name().toLowerCase() + "_effect_" + (i+1) ) );
+						? Messages.get( Factions.class, "effect_unlocked", effectName )
+						: Messages.get( Factions.class, "effect_locked", effectName, (int)thresholds[i] - (int)contribution ) );
+				sb.append( " " ).append( Messages.get( Factions.class, key ) );
 			}
 			return sb.toString();
 		}

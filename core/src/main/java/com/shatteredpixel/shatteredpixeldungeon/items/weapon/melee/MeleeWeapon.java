@@ -256,7 +256,8 @@ public class MeleeWeapon extends Weapon {
 	@Override
 	public int max(int lvl) {
 		return  5*(tier+1) +    //base
-				lvl*(tier+1);   //level scaling
+				lvl*(tier+1) +  //level scaling
+				ModHooks.warbandWeaponMaxBonus( this ); //武器掌握
 	}
 
 	public int STRReq(int lvl){

@@ -41,10 +41,11 @@ import com.shatteredpixel.shatteredpixeldungeon.items.food.SmallRation;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.Potion;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring;
-import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfForce;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfIdentify;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.darts.Dart;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
@@ -350,10 +351,6 @@ public class ModHooks {
 		Factions.Faction faction = Factions.active();
 		int tier = Factions.tier();
 		if (faction == Factions.Faction.WARBAND){
-			//处决: +25% vs enemies below 15% HP
-			if (tier >= 1 && target.HP < target.HT * 0.15f){
-				dmg = Math.round( dmg * 1.25f );
-			}
 			//屠龙术: +5% vs bosses, +1% per 10 战功 beyond 100, capped at +20%
 			if (tier >= 5 && target.properties().contains( Char.Property.BOSS )){
 				dmg = Math.round( dmg * (1f + Math.min( 0.20f, 0.05f + 0.01f * ((Factions.contribution() - 100) / 10f) )) );
@@ -370,14 +367,13 @@ public class ModHooks {
 		return dmg;
 	}
 
-	//武力: warband tier 4 emulates a +0 ring of force while truly unarmed
-	public static int warbandUnarmedDamage( Hero hero, int baseDmg ){
-		if (Factions.active() == Factions.Faction.WARBAND && Factions.tier() >= 4
-				&& hero.buff( RingOfForce.Force.class ) == null){
-			//same roll as a +0 ring of force (tier is forced to 1 at level 0): 1-10
-			return Math.max( baseDmg, Hero.heroDamageIntRange( 1, 10 ) );
+	//狂怒: warband tier 4 emulates a +0 ring of furor (+9.05% attack speed)
+	public static float warbandAttackSpeedMult( Char owner ){
+		if (Dungeon.hero != null && owner == Dungeon.hero
+				&& Factions.active() == Factions.Faction.WARBAND && Factions.tier() >= 4){
+			return 1.09051f;
 		}
-		return baseDmg;
+		return 1f;
 	}
 
 	//商会底牌: revive by spending half of current gold, once per run
@@ -421,8 +417,9 @@ public class ModHooks {
 	}
 
 	//精神食粮: hunger restored per scroll read
+	//精神食粮: satiety restored when reading scrolls, 1/3 of a small ration
 	public static float orderScrollFoodEnergy(){
-		if (Factions.active() == Factions.Faction.ORDER && Factions.tier() >= 3) return Hunger.HUNGRY / 20f;
+		if (Factions.active() == Factions.Faction.ORDER && Factions.tier() >= 3) return Hunger.HUNGRY / 6f;
 		return 0f;
 	}
 
@@ -432,12 +429,29 @@ public class ModHooks {
 		return 1f;
 	}
 
-	//明察秋毫: search range bonus levels (0-5), each odd level extends
-	//orthogonally first, the following even level completes the ring diagonally
+	//明察秋毫: growth beyond the unlock threshold, each step adds +1 search
+	//level and +1 vision turn, capped at +4 (search bonus is 1+growth levels)
+	public static int orderSearchGrowth(){
+		if (Factions.active() == Factions.Faction.ORDER && Factions.tier() >= 5){
+			return (int)Math.min( 4, (Factions.contribution() - 32) / 8 );
+		}
+		return 0;
+	}
+
+	//search range bonus levels (0-8), each odd level extends orthogonally first,
+	//the following even level completes the ring diagonally (4 base levels = 2 rings)
 	public static int orderSearchBonus(){
 		if (Factions.active() == Factions.Faction.ORDER && Factions.tier() >= 5){
-			return 1 + (int)Math.min( 4, (Factions.contribution() - 32) / 8 );
+			return 4 + orderSearchGrowth();
 		}
+		return 0;
+	}
+
+	//武器掌握: warband tier 1, melee/thrown weapon max damage +1 per weapon tier
+	public static int warbandWeaponMaxBonus( Weapon w ){
+		if (Factions.active() != Factions.Faction.WARBAND || Factions.tier() < 1) return 0;
+		if (w instanceof MeleeWeapon) return Math.min( 5, ((MeleeWeapon) w).tier );
+		if (w instanceof MissileWeapon) return Math.min( 5, ((MissileWeapon) w).tier );
 		return 0;
 	}
 }
