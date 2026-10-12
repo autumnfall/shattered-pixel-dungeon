@@ -121,7 +121,8 @@ public class ModHooks {
 
 	//mod: faction contribution + on-kill effects, called for every enemy death
 	public static void onEnemyKilled( Mob mob, Object cause ){
-		boolean heroKill = cause == Dungeon.hero || cause instanceof Weapon || cause instanceof Weapon.Enchantment;
+		boolean heroKill = cause == Dungeon.hero || cause instanceof Weapon || cause instanceof Weapon.Enchantment
+				|| cause instanceof Wand;
 		if (!heroKill) return;
 		Factions.Faction faction = Factions.active();
 		if (faction == Factions.Faction.WARBAND){
