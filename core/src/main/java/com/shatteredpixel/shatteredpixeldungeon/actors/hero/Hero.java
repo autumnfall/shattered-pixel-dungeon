@@ -719,6 +719,9 @@ public class Hero extends Char {
 		float speed = super.speed();
 
 		speed *= RingOfHaste.speedMultiplier(this);
+
+		//mod: travel light imprint, +3 movement speed per light/empty equipment slot
+		speed *= ModHooks.travelLightSpeedMult( this );
 		
 		if (belongings.armor() != null) {
 			speed = belongings.armor().speedFactor(this, speed);
@@ -788,7 +791,7 @@ public class Hero extends Char {
 			return 0;
 		}
 
-		float delay = 1f / ModHooks.travelLightSpeedMult( this );
+		float delay = 1f;
 
 		if (!RingOfForce.fightingUnarmed(this)) {
 			
